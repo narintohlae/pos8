@@ -11,39 +11,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root {
-            /* New Pastel Color Palette */
-            --primary-color: #34d399; /* Emerald 400 */
-            --primary-color-hover: #10b981; /* Emerald 500 */
-            --secondary-color: #9ca3af; /* Gray 400 */
-            --success-color: #34d399; /* Emerald 400 */
-            --danger-color: #f87171; /* Red 400 */
-            --info-color: #93c5fd; /* Blue 300 */
-            --warning-color: #fcd34d; /* Amber 300 */
-            
-            --light-bg: #f9fafb; /* Gray 50 */
+            --primary-color: #005cbf;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --warning-color: #ffc107;
+            --light-bg: #f8f9fa;
             --white-color: #ffffff;
-            --dark-text: #374151; /* Gray 700 */
-            --border-color: #f3f4f6; /* Gray 100 */
-
-            /* Shadow System */
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-            
+            --dark-text: #343a40;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-hover: 0 6px 16px rgba(0,0,0,0.12);
             --gap: 1.5rem;
-        }
-
-        @keyframes fadeInScaleUp {
-            from {
-                opacity: 0;
-                transform: translate(-50%, -52%) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
-            }
         }
 
         body {
@@ -102,8 +82,8 @@
             color: var(--primary-color);
         }
         .sidebar-btn.active {
-            background-color: #d1fae5; /* Emerald 100 */
-            color: var(--primary-color-hover);
+            background-color: #e7f1ff;
+            color: var(--primary-color);
         }
 
         /* --- Main Content Columns --- */
@@ -123,11 +103,11 @@
         .card {
             background-color: var(--white-color);
             padding: 1.5rem;
-            border-radius: 1rem; /* Increased border radius */
-            box-shadow: var(--shadow-md);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
             display: flex;
             flex-direction: column;
-            border: 1px solid #e5e7eb; /* Gray 200 */
+            border: 1px solid var(--border-color);
             width: 100%;
             height: 100%;
             box-sizing: border-box;
@@ -135,7 +115,7 @@
         }
 
         h2, h3 {
-            color: var(--primary-color-hover);
+            color: var(--primary-color);
             border-bottom: 2px solid var(--primary-color);
             padding-bottom: 0.75rem;
             margin-top: 0;
@@ -157,7 +137,7 @@
         .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.5rem; text-align: center; }
         .summary-item { background-color: #f1f3f5; padding: 0.6rem; border-radius: 8px; border: 1px solid #e0e0e0; }
         .summary-item .label { font-size: 0.8em; color: var(--secondary-color); margin-bottom: 0.25rem; display: block; }
-        .summary-item .value { font-size: 1.5em; font-weight: bold; color: var(--primary-color-hover); }
+        .summary-item .value { font-size: 1.5em; font-weight: bold; color: var(--primary-color); }
         #sales-summary-section h3 { font-size: 1.1rem; margin-bottom: 0.8rem; }
 
 
@@ -168,42 +148,42 @@
         .input-with-icon .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--secondary-color); pointer-events: none; }
         .input-with-icon input { padding-left: 40px; }
 
-        input, select { width: 100%; padding: 0.8rem 1rem; font-size: 1em; box-sizing: border-box; border: 1px solid #e5e7eb; border-radius: 8px; font-family: 'Sarabun', sans-serif; transition: border-color 0.3s, box-shadow 0.3s; background-color: var(--white-color); height: 44px; }
+        input, select { width: 100%; padding: 0.8rem 1rem; font-size: 1em; box-sizing: border-box; border: 1px solid var(--border-color); border-radius: 8px; font-family: 'Sarabun', sans-serif; transition: border-color 0.3s, box-shadow 0.3s; background-color: var(--white-color); height: 44px; }
         input:disabled { background-color: #e9ecef; cursor: not-allowed; }
-        input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.2); }
+        input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25); }
 
         #search-results { margin-top: 1rem; overflow-y: auto; border: 1px solid transparent; border-radius: 8px; flex-grow: 1; min-height: 150px; }
-        #search-results.has-results { border-color: #e5e7eb; background: #fff; }
+        #search-results.has-results { border-color: var(--border-color); background: #fff; }
         
-        .search-item { padding: 1rem; cursor: pointer; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+        .search-item { padding: 1rem; cursor: pointer; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
         .search-item:last-child { border-bottom: none; }
         .search-item:hover, .search-item.selected { background-color: var(--primary-color); color: var(--white-color); }
         .search-item.selected .price, .search-item.selected .sub-text { color: var(--white-color); }
         .search-item .sub-text { font-size: 0.85em; color: var(--secondary-color); font-weight: normal; }
         .search-item .highlight { background-color: var(--warning-color); border-radius: 3px; padding: 0 4px; color: var(--dark-text); }
-        .search-item.selected .highlight { background-color: #fde047; }
+        .search-item.selected .highlight { background-color: #ffdd72; }
 
-        .cart-header-row { display: grid; grid-template-columns: 30px 2fr 80px 100px 100px 40px; gap: 0.5rem; padding: 0 0.8rem 0.4rem 0.8rem; font-weight: bold; color: var(--secondary-color); border-bottom: 2px solid #e5e7eb; align-items: center; text-align: center; flex-shrink: 0; }
+        .cart-header-row { display: grid; grid-template-columns: 30px 2fr 80px 100px 100px 40px; gap: 0.5rem; padding: 0 0.8rem 0.4rem 0.8rem; font-weight: bold; color: var(--secondary-color); border-bottom: 2px solid var(--border-color); align-items: center; text-align: center; flex-shrink: 0; }
         .cart-header-row .col-name { text-align: left; }
         .cart-header-row .col-right { text-align: right; }
         
         #cart-items { list-style-type: none; padding: 0; overflow-y: auto; margin-top: 0.5rem; flex-grow: 1; }
         #cart-items li { padding: 0.2rem 0.8rem; border-radius: 6px; margin-bottom: 2px; display: grid; grid-template-columns: 30px 2fr 80px 100px 100px 40px; align-items: center; gap: 0.5rem; font-size: 0.85em; transition: background-color 0.2s; border: 1px solid transparent; }
         #cart-items li:nth-child(even) { background-color: #f8f9fa; }
-        #cart-items li:hover { background-color: #e9ecef; border-color: #e5e7eb; }
+        #cart-items li:hover { background-color: #e9ecef; border-color: var(--border-color); }
         #cart-items .col-name { text-align: left; }
         #cart-items .col-seq, #cart-items .col-delete { text-align: center; }
         #cart-items .col-price, #cart-items .col-total { text-align: right; }
 
-        .item-input { text-align: right; border: 1px solid #e5e7eb; border-radius: 6px; padding: 4px 6px; font-size: 1em; background-color: var(--white-color); width: 100%; box-sizing: border-box; -moz-appearance: textfield; height: 30px;}
+        .item-input { text-align: right; border: 1px solid var(--border-color); border-radius: 6px; padding: 4px 6px; font-size: 1em; background-color: var(--white-color); width: 100%; box-sizing: border-box; -moz-appearance: textfield; height: 30px;}
         .item-input::-webkit-outer-spin-button, .item-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .col-qty .item-input { width: 60px; text-align: center; margin: auto; }
 
         .delete-item-btn { background: transparent; border: none; color: var(--danger-color); cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s, background-color 0.2s; border-radius: 50%; width: 30px; height: 30px; }
-        .delete-item-btn:hover { transform: scale(1.1); background-color: #fee2e2; } /* Red 100 */
+        .delete-item-btn:hover { transform: scale(1.1); background-color: #fce8e6; }
         .delete-item-btn svg { width: 18px; height: 18px; }
 
-        .totals-section { padding-top: 0.5rem; border-top: 2px solid #e5e7eb; margin-top: auto; flex-shrink: 0; }
+        .totals-section { padding-top: 0.5rem; border-top: 2px solid var(--border-color); margin-top: auto; flex-shrink: 0; }
         .total-row { display: flex; justify-content: space-between; font-size: 1.1em; margin-bottom: 0.16rem; align-items: center; }
         .total-row label, .total-row span { font-weight: bold; }
         #discount-input { width: 70px; font-size: 1em; text-align: right; height: 30px; padding: 4px 6px; }
@@ -212,162 +192,80 @@
         .button-group { display: flex; gap: 1rem; margin-top: 1.5rem; }
         .button-group-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; flex-shrink: 0; }
 
-        /* Updated Button Styles */
-        button {
-            background-image: linear-gradient(to bottom, var(--primary-color), var(--primary-color-hover));
-            color: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1.05em;
-            font-family: 'Sarabun', sans-serif;
-            transition: all 0.2s ease-in-out;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            height: 44px;
-            font-weight: bold;
-            box-shadow: var(--shadow-md);
-        }
-        button:hover {
-            box-shadow: var(--shadow-lg);
-            transform: translateY(-2px);
-        }
-        button:disabled {
-            background-image: none;
-            background-color: #9ca3af; /* Gray 400 */
-            cursor: not-allowed;
-            box-shadow: var(--shadow-sm);
-            transform: none;
-        }
-        button:active {
-            transform: scale(0.98) translateY(0);
-            box-shadow: var(--shadow);
-        }
+        button { background-color: var(--primary-color); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; font-size: 1.05em; font-family: 'Sarabun', sans-serif; transition: background-color 0.3s, transform 0.1s, filter 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent; height: 44px; font-weight: bold; }
+        button:hover { filter: brightness(115%); }
+        button:disabled { background-color: #6c757d; cursor: not-allowed; filter: grayscale(50%); }
+        button:active { transform: scale(0.98); }
+        button.finish-sale { background-color: var(--success-color); border-color: var(--success-color); }
+        button.clear-cart { background-color: var(--danger-color); border-color: var(--danger-color); }
+        .delete-history-btn { background-color: var(--danger-color); padding: 0.25rem 0.75rem; font-size: 0.9em; }
+        .edit-history-btn { background-color: var(--info-color); padding: 0.25rem 0.75rem; font-size: 0.9em; margin-right: 5px; }
         
-        /* Specific Button Colors */
-        button.finish-sale { background-image: linear-gradient(to bottom, var(--success-color), #059669); }
-        button.clear-cart { background-image: linear-gradient(to bottom, var(--danger-color), #ef4444); }
-        .delete-history-btn { background-image: linear-gradient(to bottom, var(--danger-color), #ef4444); padding: 0.25rem 0.75rem; font-size: 0.9em; }
-        .edit-history-btn { background-image: linear-gradient(to bottom, var(--info-color), #60a5fa); padding: 0.25rem 0.75rem; font-size: 0.9em; margin-right: 5px; }
-
-        /* Secondary Button Style */
-        .btn-secondary {
-            background-image: none;
-            background-color: var(--white-color);
-            color: var(--secondary-color);
-            border: 1px solid #e5e7eb;
-            box-shadow: var(--shadow);
-        }
-        .btn-secondary:hover {
-            background-color: var(--light-bg);
-            border-color: #d1d5db; /* Gray 300 */
-            color: var(--dark-text);
-        }
-        
-        #history-table-wrapper, #report-table-wrapper { flex-grow: 1; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; }
+        #history-table-wrapper, #report-table-wrapper { flex-grow: 1; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; }
         #history-table, #report-table { width: 100%; border-collapse: collapse; }
-        #history-table th, #history-table td, #report-table th, #report-table td { border-bottom: 1px solid #e5e7eb; padding: 1rem; text-align: left; vertical-align: middle; }
+        #history-table th, #history-table td, #report-table th, #report-table td { border-bottom: 1px solid var(--border-color); padding: 1rem; text-align: left; vertical-align: middle; }
         #history-table th, #report-table th { background-color: #f1f3f5; position: sticky; top: 0; z-index: 10; font-weight: bold; }
         #history-table tr:nth-child(even), #report-table tr:nth-child(even) { background-color: var(--light-bg); }
-        #history-table tr:hover, #report-table tr:hover { background-color: #d1fae5; }
+        #history-table tr:hover, #report-table tr:hover { background-color: #e9f5ff; }
         #history-table tr.exported-row { background-color: #f1f8e9; opacity: 0.8; }
         #history-table tr.exported-row:hover { opacity: 1; }
         #history-table tr.exported-row td { color: #555; }
 
-        /* Updated Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(17, 24, 39, 0.4); /* Cool Gray with opacity */
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background-color: var(--white-color);
-            border-radius: 1rem; /* Softer corners */
-            box-shadow: var(--shadow-xl);
-            width: 90%;
-            max-width: 550px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: fixed; /* For animation */
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation: fadeInScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .modal-overlay[style*="display: flex;"] .modal-content {
-            display: flex; /* Ensure it's visible when overlay is */
-        }
-        .modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid #e5e7eb; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background-color: var(--white-color); border-radius: 12px; box-shadow: 0 5px 25px rgba(0,0,0,0.3); width: 90%; max-width: 550px; display: flex; flex-direction: column; overflow: hidden; }
+        .modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); }
         .modal-header h3 { margin: 0; border: none; }
         .modal-body { padding: 2rem; flex-grow: 1; overflow-y: auto; }
-        .modal-footer {
-            padding: 1.5rem 2rem;
-            border-top: 1px solid #e5e7eb;
-            background-color: var(--light-bg);
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-        }
+        .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); background-color: var(--light-bg); display: flex; justify-content: flex-end; align-items: center; }
         .modal-footer .button-group { margin-top: 0; justify-content: flex-end; }
         .modal-content p { white-space: pre-wrap; text-align: left; margin-bottom: 1.5rem; line-height: 1.6; }
         .payment-modal-body { width: 100%; }
-        .payment-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid #e5e7eb; }
+        .payment-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border-color); }
         .payment-row:last-child { border-bottom: none; margin-bottom: 0; }
         .payment-label { font-size: 1.6em; color: var(--secondary-color); }
         .payment-amount { font-weight: bold; }
-        #payment-total-final { font-size: 2.8em; color: var(--primary-color-hover); }
+        #payment-total-final { font-size: 2.8em; color: var(--primary-color); }
         #cash-received-input { font-size: 2.2em; text-align: right; width: 50%; }
         #payment-change { font-size: 3.2em; color: var(--success-color); }
-        .cart-tabs-container { display: flex; align-items: center; border-bottom: 2px solid #e5e7eb; margin-bottom: 0.3rem; flex-shrink: 0; }
+        .cart-tabs-container { display: flex; align-items: center; border-bottom: 2px solid var(--border-color); margin-bottom: 0.3rem; flex-shrink: 0; }
         #cart-tabs { display: flex; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
         .tab-button { padding: 0.8rem 1.2rem; cursor: pointer; background-color: transparent; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; font-size: 1em; color: var(--secondary-color); position: relative; flex-shrink: 0; transition: color 0.3s, border-color 0.3s; }
-        .tab-button.active { color: var(--primary-color-hover); border-bottom-color: var(--primary-color); font-weight: bold; }
+        .tab-button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); font-weight: bold; }
         .close-tab-btn { background: none; border: none; color: inherit; font-size: 1.3em; padding: 0 0 0 0.75rem; line-height: 1; opacity: 0.5; border-radius: 50%; }
         .close-tab-btn:hover { opacity: 1; background-color: rgba(0,0,0,0.1); }
         #product-mgmt-modal .modal-content, #history-modal .modal-content, #settings-modal .modal-content, #report-modal .modal-content { max-width: 90vw; width: 1200px; height: 90vh; }
-        .modal-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 2rem; border-bottom: 1px solid #e5e7eb; }
+        .modal-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 2rem; border-bottom: 1px solid var(--border-color); }
         .modal-toolbar h2 { margin: 0; border: none; font-size: 1.6rem; }
         #product-list-container { flex-grow: 1; overflow-y: auto; }
-        .product-list-row { display: grid; grid-template-columns: 2fr 1fr 1.5fr 150px; gap: 1.5rem; padding: 1rem 2rem; border-bottom: 1px solid #e5e7eb; align-items: center; transition: background-color 0.2s; }
+        .product-list-row { display: grid; grid-template-columns: 2fr 1fr 1.5fr 150px; gap: 1.5rem; padding: 1rem 2rem; border-bottom: 1px solid var(--border-color); align-items: center; transition: background-color 0.2s; }
         .product-list-row:last-child { border-bottom: none; }
         .product-list-row.product-list-header { background-color: var(--light-bg); font-weight: bold; position: sticky; top: 0; z-index: 1; }
-        .product-list-row:not(.product-list-header):hover { background-color: #d1fae5; }
+        .product-list-row:not(.product-list-header):hover { background-color: #e9f5ff; }
         #product-editor-modal .modal-content { max-width: 1200px; width: 90vw; height: 85vh; padding: 0; }
         #product-editor-form { display: flex; flex-direction: column; overflow: hidden; height: 100%; }
         .form-content-area { flex-grow: 1; overflow-y: auto; padding: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; }
         .form-column-left, .form-column-right { display: flex; flex-direction: column; }
-        .pricing-unit-card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; background-color: #fdfdfd; }
-        .pricing-unit-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem; margin-bottom: 1.5rem; }
+        .pricing-unit-card { border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; background-color: #fdfdfd; }
+        .pricing-unit-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem; }
         .pricing-unit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
         #pricing-units-container { flex-grow: 1; }
         .price-tiers-container { margin-top: 1.5rem; }
         .price-tier-header { display: grid; grid-template-columns: 1fr 1fr 40px; gap: 0.75rem; font-size: 0.85em; color: var(--secondary-color); padding: 0 4px; margin-bottom: 0.5rem; }
         .price-tier-row { display: grid; grid-template-columns: 1fr 1fr 40px; gap: 0.75rem; align-items: center; margin-bottom: 0.75rem; }
-        .add-tier-btn { padding: 0.6rem; font-size: 0.9em; background-image: linear-gradient(to bottom, var(--secondary-color), #4b5563); }
-        #add-pricing-unit-btn { background-image: linear-gradient(to bottom, var(--info-color), #60a5fa); margin-top: 1rem; }
+        .add-tier-btn { padding: 0.6rem; font-size: 0.9em; background-color: var(--secondary-color); }
+        #add-pricing-unit-btn { background-color: var(--info-color); margin-top: 1rem; }
         #product-list-pagination { flex-grow: 1; display: flex; justify-content: center; align-items: center; }
-        .pagination-controls button { background-image: none; background-color: var(--white-color); color: var(--primary-color); border: 1px solid var(--primary-color); padding: 0.5rem 1rem; margin: 0 0.25rem; border-radius: 6px; cursor: pointer; transition: background-color 0.2s, color 0.2s; height: auto; min-width: 40px; box-shadow: var(--shadow-sm); }
-        .pagination-controls button:hover:not(:disabled) { background-color: var(--primary-color); color: var(--white-color); }
+        .pagination-controls button { background-color: var(--white-color); color: var(--primary-color); border: 1px solid var(--primary-color); padding: 0.5rem 1rem; margin: 0 0.25rem; border-radius: 6px; cursor: pointer; transition: background-color 0.2s, color 0.2s; height: auto; min-width: 40px; }
+        .pagination-controls button:hover:not(:disabled) { background-color: var(--primary-color); color: var(--white-color); filter: brightness(100%); }
         .pagination-controls button.active { background-color: var(--primary-color); color: var(--white-color); font-weight: bold; }
-        .pagination-controls button:disabled { background-color: var(--light-bg); border-color: #e5e7eb; color: var(--secondary-color); cursor: not-allowed; opacity: 0.6; }
+        .pagination-controls button:disabled { background-color: var(--light-bg); border-color: var(--border-color); color: var(--secondary-color); cursor: not-allowed; opacity: 0.6; }
         .pagination-info { margin: 0 1rem; color: var(--secondary-color); font-size: 0.9em; }
 
         /* Responsive */
         @media (max-width: 992px) {
             body { overflow: auto; height: auto; }
             .app-layout { display: block; }
-            #app-sidebar { width: 100%; flex-direction: row; justify-content: space-around; padding: 0.5rem 0; border-right: none; border-top: 1px solid #e5e7eb; position: fixed; bottom: 0; left: 0; z-index: 100; height: 65px; }
+            #app-sidebar { width: 100%; flex-direction: row; justify-content: space-around; padding: 0.5rem 0; border-right: none; border-top: 1px solid var(--border-color); position: fixed; bottom: 0; left: 0; z-index: 100; height: 65px; }
             .sidebar-btn { width: auto; flex-grow: 1; }
             .sidebar-btn span { font-size: 0.8em; }
             .sidebar-btn svg { width: 24px; height: 24px; }
@@ -491,7 +389,7 @@
                         <label>&nbsp;</label>
                         <div style="display: flex; gap: 0.5rem;">
                             <button type="button" id="filter-history-btn" style="width: 100%;">ค้นหา</button>
-                            <button type="button" id="today-history-btn" style="background-image: linear-gradient(to bottom, var(--info-color), #60a5fa); width: 100%;">วันนี้</button>
+                            <button type="button" id="today-history-btn" style="background-color: var(--info-color); width: 100%;">วันนี้</button>
                         </div>
                     </div>
                 </div>
@@ -508,7 +406,7 @@
             </section>
         </div>
         <div class="modal-footer">
-            <button type="button" class="close-main-modal-btn btn-secondary">ปิด</button>
+            <button type="button" class="close-main-modal-btn" style="background-color: var(--secondary-color);">ปิด</button>
         </div>
     </div>
 </div>
@@ -519,11 +417,11 @@
             <section class="card" style="height: 100%; box-shadow: none; border: none; padding: 0;">
                 <h2>การตั้งค่าและจัดการ</h2>
                 <div class="button-group">
-                    <button type="button" id="manage-products-btn" style="background-image: linear-gradient(to bottom, var(--info-color), #60a5fa);">
+                    <button type="button" id="manage-products-btn" style="background-color: var(--info-color);">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                         จัดการสินค้า
                     </button>
-                    <button type="button" id="import-from-sheet-btn" style="background-image: linear-gradient(to bottom, var(--success-color), #059669);">
+                    <button type="button" id="import-from-sheet-btn" style="background-color: var(--success-color);">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
                         นำเข้า/อัปเดตจาก Google Sheet
                     </button>
@@ -535,7 +433,7 @@
             </section>
         </div>
         <div class="modal-footer">
-            <button type="button" class="close-main-modal-btn btn-secondary">ปิด</button>
+            <button type="button" class="close-main-modal-btn" style="background-color: var(--secondary-color);">ปิด</button>
         </div>
     </div>
 </div>
@@ -556,9 +454,9 @@
                     <div class="filter-group">
                         <label>&nbsp;</label>
                         <div style="display: flex; gap: 0.5rem;">
-                             <button type="button" id="report-today-btn" style="background-image: linear-gradient(to bottom, var(--info-color), #60a5fa);">วันนี้</button>
-                             <button type="button" id="report-week-btn" class="btn-secondary">สัปดาห์นี้</button>
-                             <button type="button" id="report-month-btn" class="btn-secondary">เดือนนี้</button>
+                             <button type="button" id="report-today-btn" style="background-color: var(--info-color);">วันนี้</button>
+                             <button type="button" id="report-week-btn">สัปดาห์นี้</button>
+                             <button type="button" id="report-month-btn">เดือนนี้</button>
                         </div>
                     </div>
                     <div class="filter-group">
@@ -583,19 +481,19 @@
             </section>
         </div>
         <div class="modal-footer">
-            <button type="button" class="close-main-modal-btn btn-secondary">ปิด</button>
+            <button type="button" class="close-main-modal-btn" style="background-color: var(--secondary-color);">ปิด</button>
         </div>
     </div>
 </div>
 
 
 <!-- Other Modals -->
-<div id="payment-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"><h3>ชำระเงิน</h3></div> <div class="modal-body"> <div class="payment-modal-body"> <div class="payment-row"><span class="payment-label">ยอดสุทธิ</span><span class="payment-amount" id="payment-total-final">0.00</span></div> <div class="payment-row"><label for="cash-received-input" class="payment-label">รับเงินมา</label><input type="number" id="cash-received-input" step="any" placeholder="0.00"></div> <div class="payment-row"><span class="payment-label">เงินทอน</span><span class="payment-amount" id="payment-change">0.00</span></div> </div> </div> <div class="modal-footer"> <div class="button-group"> <button type="button" id="cancel-payment-btn" class="btn-secondary">ยกเลิก (ESC)</button> <button type="button" id="confirm-sale-btn" class="finish-sale">ยืนยันการขาย (Enter)</button> </div> </div> </div> </div>
-<div id="delete-confirm-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"><h3 style="color:var(--danger-color)">ยืนยันการลบ</h3></div> <div class="modal-body"><p id="delete-confirm-text"></p></div> <div class="modal-footer"> <div class="button-group"> <button type="button" id="cancel-delete-btn" class="btn-secondary">ยกเลิก</button> <button type="button" id="confirm-delete-btn" class="clear-cart">ยืนยันการลบ</button> </div> </div> </div> </div>
-<div id="clear-options-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"><h3>เลือกวิธีการล้างประวัติ</h3></div> <div class="modal-body"> <p>คุณต้องการล้างประวัติการขายแบบใด?</p> <div class="button-group" style="flex-direction: column; gap: 1rem;"> <button type="button" id="clear-local-btn" style="background-image: linear-gradient(to bottom, var(--info-color), #60a5fa);">ล้างเฉพาะหน้าเว็บนี้</button> <button type="button" id="clear-db-btn" class="clear-cart">ล้างจากฐานข้อมูล (ถาวร)</button> </div> </div> <div class="modal-footer"> <button type="button" id="cancel-clear-btn" class="btn-secondary">ยกเลิก</button> </div> </div> </div>
+<div id="payment-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"><h3>ชำระเงิน</h3></div> <div class="modal-body"> <div class="payment-modal-body"> <div class="payment-row"><span class="payment-label">ยอดสุทธิ</span><span class="payment-amount" id="payment-total-final">0.00</span></div> <div class="payment-row"><label for="cash-received-input" class="payment-label">รับเงินมา</label><input type="number" id="cash-received-input" step="any" placeholder="0.00"></div> <div class="payment-row"><span class="payment-label">เงินทอน</span><span class="payment-amount" id="payment-change">0.00</span></div> </div> </div> <div class="modal-footer"> <div class="button-group"> <button type="button" id="cancel-payment-btn" style="background-color:var(--secondary-color)">ยกเลิก (ESC)</button> <button type="button" id="confirm-sale-btn" class="finish-sale">ยืนยันการขาย (Enter)</button> </div> </div> </div> </div>
+<div id="delete-confirm-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"><h3 style="color:var(--danger-color)">ยืนยันการลบ</h3></div> <div class="modal-body"><p id="delete-confirm-text"></p></div> <div class="modal-footer"> <div class="button-group"> <button type="button" id="cancel-delete-btn" style="background-color:var(--secondary-color)">ยกเลิก</button> <button type="button" id="confirm-delete-btn" class="clear-cart">ยืนยันการลบ</button> </div> </div> </div> </div>
+<div id="clear-options-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"><h3>เลือกวิธีการล้างประวัติ</h3></div> <div class="modal-body"> <p>คุณต้องการล้างประวัติการขายแบบใด?</p> <div class="button-group" style="flex-direction: column; gap: 1rem;"> <button type="button" id="clear-local-btn" class="clear-cart" style="background-color: var(--info-color);">ล้างเฉพาะหน้าเว็บนี้</button> <button type="button" id="clear-db-btn" class="clear-cart">ล้างจากฐานข้อมูล (ถาวร)</button> </div> </div> <div class="modal-footer"> <button type="button" id="cancel-clear-btn" style="background-color: var(--secondary-color);">ยกเลิก</button> </div> </div> </div>
 <div id="info-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"><h3 id="info-modal-title" style="color: var(--primary-color);"></h3></div> <div class="modal-body"><p id="info-modal-text"></p></div> <div class="modal-footer" style="justify-content:center"><button type="button" id="info-modal-ok-btn">ตกลง (Enter/ESC)</button></div> </div> </div>
-<div id="product-mgmt-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-toolbar"> <h2>จัดการสินค้า</h2> <div class="input-with-icon" style="width: 300px;"> <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span> <input type="text" id="product-search-input" placeholder="ค้นหาสินค้า..."> </div> <button type="button" id="add-new-product-btn" class="finish-sale"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> เพิ่มสินค้าใหม่ </button> </div> <div id="product-list-container"></div> <div class="modal-footer"> <div id="product-list-pagination"></div> <button type="button" id="close-product-mgmt-btn" class="btn-secondary">ปิด</button> </div> </div> </div>
-<div id="product-editor-modal" class="modal-overlay"> <div class="modal-content"> <form id="product-editor-form"> <div class="modal-header"><h3 id="product-editor-title">เพิ่มสินค้าใหม่</h3></div> <div class="form-content-area"> <div class="form-column-left"> <h4 style="border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-bottom: 1rem;">ข้อมูลสินค้าหลัก</h4> <div class="form-group"> <label for="product-code">รหัสสินค้า (ห้ามซ้ำ)</label> <input type="text" id="product-code" required> </div> <div class="form-group"> <label for="product-name">ชื่อสินค้า</label> <input type="text" id="product-name" required> </div> <div class="form-group"> <label for="product-category">หมวดหมู่ (ไม่บังคับ)</label> <input type="text" id="product-category"> </div> <div class="form-group"> <label for="product-base-unit">หน่วยเล็กที่สุด (สำหรับนับสต็อก)</label> <input type="text" id="product-base-unit" placeholder="เช่น ชิ้น, ขวด, กรัม" required> </div> <div class="form-group"> <label for="product-stock">จำนวนสต็อก (ตามหน่วยเล็กที่สุด)</label> <input type="number" id="product-stock" value="0" required> </div> </div> <div class="form-column-right"> <h4 style="border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-bottom: 1rem;">หน่วยและราคาขาย</h4> <div id="pricing-units-container"></div> <button type="button" id="add-pricing-unit-btn"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> เพิ่มหน่วยขาย </button> </div> </div> <div class="modal-footer"> <div class="button-group"> <button type="button" id="cancel-product-editor-btn" class="btn-secondary">ยกเลิก</button> <button type="submit" id="save-product-btn" class="finish-sale">บันทึกสินค้า</button> </div> </div> </form> </div> </div>
+<div id="product-mgmt-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-toolbar"> <h2>จัดการสินค้า</h2> <div class="input-with-icon" style="width: 300px;"> <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span> <input type="text" id="product-search-input" placeholder="ค้นหาสินค้า..."> </div> <button type="button" id="add-new-product-btn" class="finish-sale"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> เพิ่มสินค้าใหม่ </button> </div> <div id="product-list-container"></div> <div class="modal-footer"> <div id="product-list-pagination"></div> <button type="button" id="close-product-mgmt-btn" style="background-color: var(--secondary-color);">ปิด</button> </div> </div> </div>
+<div id="product-editor-modal" class="modal-overlay"> <div class="modal-content"> <form id="product-editor-form"> <div class="modal-header"><h3 id="product-editor-title">เพิ่มสินค้าใหม่</h3></div> <div class="form-content-area"> <div class="form-column-left"> <h4 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">ข้อมูลสินค้าหลัก</h4> <div class="form-group"> <label for="product-code">รหัสสินค้า (ห้ามซ้ำ)</label> <input type="text" id="product-code" required> </div> <div class="form-group"> <label for="product-name">ชื่อสินค้า</label> <input type="text" id="product-name" required> </div> <div class="form-group"> <label for="product-category">หมวดหมู่ (ไม่บังคับ)</label> <input type="text" id="product-category"> </div> <div class="form-group"> <label for="product-base-unit">หน่วยเล็กที่สุด (สำหรับนับสต็อก)</label> <input type="text" id="product-base-unit" placeholder="เช่น ชิ้น, ขวด, กรัม" required> </div> <div class="form-group"> <label for="product-stock">จำนวนสต็อก (ตามหน่วยเล็กที่สุด)</label> <input type="number" id="product-stock" value="0" required> </div> </div> <div class="form-column-right"> <h4 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">หน่วยและราคาขาย</h4> <div id="pricing-units-container"></div> <button type="button" id="add-pricing-unit-btn"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> เพิ่มหน่วยขาย </button> </div> </div> <div class="modal-footer"> <div class="button-group"> <button type="button" id="cancel-product-editor-btn" style="background-color: var(--secondary-color);">ยกเลิก</button> <button type="submit" id="save-product-btn" class="finish-sale">บันทึกสินค้า</button> </div> </div> </form> </div> </div>
 
 <script type="module">
     // Firebase Initialization (Secure Method with Local Fallback)
@@ -1661,9 +1559,9 @@ const POS_APP = {
         const textEl = document.getElementById('info-modal-text'); 
         const okBtn = document.getElementById('info-modal-ok-btn'); 
         titleEl.textContent = title; 
-        titleEl.style.color = isError ? 'var(--danger-color)' : 'var(--primary-color-hover)'; 
+        titleEl.style.color = isError ? 'var(--danger-color)' : 'var(--primary-color)'; 
         textEl.textContent = text; 
-        okBtn.style.backgroundImage = isError ? 'linear-gradient(to bottom, var(--danger-color), #ef4444)' : 'linear-gradient(to bottom, var(--primary-color), var(--primary-color-hover))'; 
+        okBtn.style.backgroundColor = isError ? 'var(--danger-color)' : 'var(--primary-color)'; 
         document.getElementById('info-modal').style.display = 'flex'; 
         this.state.activeModalCloseHandler = (e) => { 
             if (e.key === 'Enter' || e.key === 'Escape') { 
@@ -2250,4 +2148,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-" in the Canvas. I am not asking for a new document. I am not asking for a direct/simple answer. I am asking for an edit to the docume
