@@ -458,6 +458,13 @@
                         </div>
                     </div>
                     <div class="filter-group">
+                        <label for="report-product-search">ค้นหาสินค้าในรายงาน</label>
+                        <div class="input-with-icon">
+                             <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
+                             <input type="text" id="report-product-search" placeholder="พิมพ์ชื่อสินค้า...">
+                        </div>
+                    </div>
+                    <div class="filter-group">
                         <label>&nbsp;</label>
                         <div style="display: flex; gap: 0.5rem;">
                              <button type="button" id="report-today-btn" style="background-color: var(--info-color);">วันนี้</button>
@@ -594,7 +601,8 @@ const POS_APP = {
         _costCalculationListener: null,
         productListPage: 1,
         productsPerPage: 10,
-        currentReportData: [], // NEW: Store generated report data
+        currentReportData: [],
+        currentReportSalesDocs: [], // To store sales docs for summary
     },
 
     init() {
@@ -698,6 +706,7 @@ const POS_APP = {
         document.getElementById('report-week-btn').addEventListener('click', () => this.setReportDateRange('week'));
         document.getElementById('report-month-btn').addEventListener('click', () => this.setReportDateRange('month'));
         document.getElementById('export-report-excel-btn').addEventListener('click', () => this.exportReportToExcel());
+        document.getElementById('report-product-search').addEventListener('input', () => this.updateReportView());
 
 
         // --- Existing Event Listeners ---
@@ -873,17 +882,39 @@ const POS_APP = {
     },
 
     renderReport(reportArray, salesDocs) {
+        // Store the full, unfiltered data in the state
+        this.state.currentReportData = reportArray;
+        this.state.currentReportSalesDocs = salesDocs;
+        
+        // Clear the search input when a new report is generated
+        const searchInput = document.getElementById('report-product-search');
+        if (searchInput) {
+            searchInput.value = '';
+        }
+
+        // Call the new rendering function
+        this.updateReportView();
+    },
+
+    updateReportView() {
+        const reportArray = this.state.currentReportData;
+        const salesDocs = this.state.currentReportSalesDocs;
         const reportBody = document.getElementById('report-body');
         const summaryGrid = document.getElementById('report-summary-grid');
         const summarySection = document.getElementById('report-summary-section');
         reportBody.innerHTML = '';
         summaryGrid.innerHTML = '';
 
+        if (!reportArray || !salesDocs) {
+            reportBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">ไม่มีข้อมูลรายงานให้แสดงผล</td></tr>';
+            return;
+        }
+
         if (this.state.isRestrictedMode) {
             summarySection.style.display = 'none';
         } else {
             summarySection.style.display = 'block';
-            // --- Calculate and Render Summary ---
+            // --- Calculate and Render Summary (using unfiltered data) ---
             const totalRevenue = salesDocs.reduce((sum, sale) => sum + sale.total, 0);
             const totalDiscount = salesDocs.reduce((sum, sale) => sum + sale.discount, 0);
             const totalCost = reportArray.reduce((sum, item) => sum + item.totalCost, 0);
@@ -908,9 +939,15 @@ const POS_APP = {
             `).join('');
         }
         
-        // --- Render Table ---
-        if (reportArray.length > 0) {
-            reportArray.forEach(item => {
+        // Filter the report data based on the search input before rendering the table
+        const searchTerm = document.getElementById('report-product-search').value.toLowerCase();
+        const filteredReportArray = reportArray.filter(item => 
+            item.productName.toLowerCase().includes(searchTerm)
+        );
+
+        // --- Render Table (using filtered data) ---
+        if (filteredReportArray.length > 0) {
+            filteredReportArray.forEach(item => {
                 const row = reportBody.insertRow();
                 row.innerHTML = `
                     <td><strong>${item.productName}</strong></td>
@@ -921,7 +958,11 @@ const POS_APP = {
                 `;
             });
         } else {
-             reportBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">ไม่พบข้อมูลการขายในช่วงวันที่ที่เลือก</td></tr>';
+             if (searchTerm && reportArray.length > 0) {
+                reportBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">ไม่พบสินค้าที่ตรงกับคำค้นหาในรายงานนี้</td></tr>';
+             } else {
+                reportBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">ไม่พบข้อมูลการขายในช่วงวันที่ที่เลือก</td></tr>';
+             }
         }
     },
 
