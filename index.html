@@ -371,7 +371,6 @@
     </div>
 </div>
 
-<!-- Main Page Modals -->
 <div id="history-modal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-body" style="display: flex; flex-direction: column;">
@@ -473,8 +472,7 @@
                 </div>
                 <div id="report-summary-section" style="margin-bottom: 1.5rem;">
                      <div class="summary-grid" id="report-summary-grid">
-                         <!-- Summary items will be injected here -->
-                     </div>
+                         </div>
                 </div>
                 <div class="button-group" style="justify-content: flex-start; margin-bottom: 1rem; margin-top:0;">
                     <button type="button" id="export-report-excel-btn">Export to Excel</button>
@@ -494,7 +492,6 @@
 </div>
 
 
-<!-- Other Modals -->
 <div id="payment-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"><h3>ชำระเงิน</h3></div> <div class="modal-body"> <div class="payment-modal-body"> <div class="payment-row"><span class="payment-label">ยอดสุทธิ</span><span class="payment-amount" id="payment-total-final">0.00</span></div> <div class="payment-row"><label for="cash-received-input" class="payment-label">รับเงินมา</label><input type="number" id="cash-received-input" step="any" placeholder="0.00"></div> <div class="payment-row"><span class="payment-label">เงินทอน</span><span class="payment-amount" id="payment-change">0.00</span></div> </div> </div> <div class="modal-footer"> <div class="button-group"> <button type="button" id="cancel-payment-btn" style="background-color:var(--secondary-color)">ยกเลิก (ESC)</button> <button type="button" id="confirm-sale-btn" class="finish-sale">ยืนยันการขาย (Enter)</button> </div> </div> </div> </div>
 <div id="delete-confirm-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"><h3 style="color:var(--danger-color)">ยืนยันการลบ</h3></div> <div class="modal-body"><p id="delete-confirm-text"></p></div> <div class="modal-footer"> <div class="button-group"> <button type="button" id="cancel-delete-btn" style="background-color:var(--secondary-color)">ยกเลิก</button> <button type="button" id="confirm-delete-btn" class="clear-cart">ยืนยันการลบ</button> </div> </div> </div> </div>
 <div id="clear-options-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"><h3>เลือกวิธีการล้างประวัติ</h3></div> <div class="modal-body"> <p>คุณต้องการล้างประวัติการขายแบบใด?</p> <div class="button-group" style="flex-direction: column; gap: 1rem;"> <button type="button" id="clear-local-btn" class="clear-cart" style="background-color: var(--info-color);">ล้างเฉพาะหน้าเว็บนี้</button> <button type="button" id="clear-db-btn" class="clear-cart">ล้างจากฐานข้อมูล (ถาวร)</button> </div> </div> <div class="modal-footer"> <button type="button" id="cancel-clear-btn" style="background-color: var(--secondary-color);">ยกเลิก</button> </div> </div> </div>
@@ -878,33 +875,39 @@ const POS_APP = {
     renderReport(reportArray, salesDocs) {
         const reportBody = document.getElementById('report-body');
         const summaryGrid = document.getElementById('report-summary-grid');
+        const summarySection = document.getElementById('report-summary-section');
         reportBody.innerHTML = '';
         summaryGrid.innerHTML = '';
 
-        // --- Calculate and Render Summary ---
-        const totalRevenue = salesDocs.reduce((sum, sale) => sum + sale.total, 0);
-        const totalDiscount = salesDocs.reduce((sum, sale) => sum + sale.discount, 0);
-        const totalCost = reportArray.reduce((sum, item) => sum + item.totalCost, 0);
-        const totalProfit = totalRevenue - totalCost;
-        const totalBills = salesDocs.length;
-        const totalItemsSold = reportArray.reduce((sum, item) => sum + item.totalQuantity, 0);
+        if (this.state.isRestrictedMode) {
+            summarySection.style.display = 'none';
+        } else {
+            summarySection.style.display = 'block';
+            // --- Calculate and Render Summary ---
+            const totalRevenue = salesDocs.reduce((sum, sale) => sum + sale.total, 0);
+            const totalDiscount = salesDocs.reduce((sum, sale) => sum + sale.discount, 0);
+            const totalCost = reportArray.reduce((sum, item) => sum + item.totalCost, 0);
+            const totalProfit = totalRevenue - totalCost;
+            const totalBills = salesDocs.length;
+            const totalItemsSold = reportArray.reduce((sum, item) => sum + item.totalQuantity, 0);
 
-        const summaryItems = [
-            { label: 'ยอดขายสุทธิ', value: totalRevenue.toFixed(2), color: 'var(--success-color)' },
-            { label: 'กำไรรวม', value: totalProfit.toFixed(2), color: '#00aaff' },
-            { label: 'ต้นทุนรวม', value: totalCost.toFixed(2), color: 'var(--secondary-color)' },
-            { label: 'ส่วนลดรวม', value: totalDiscount.toFixed(2), color: 'var(--warning-color)' },
-            { label: 'จำนวนบิล', value: totalBills },
-            { label: 'จำนวนสินค้าที่ขาย (ชิ้น)', value: totalItemsSold.toFixed(0) },
-        ];
+            const summaryItems = [
+                { label: 'ยอดขายสุทธิ', value: totalRevenue.toFixed(2), color: 'var(--success-color)' },
+                { label: 'กำไรรวม', value: totalProfit.toFixed(2), color: '#00aaff' },
+                { label: 'ต้นทุนรวม', value: totalCost.toFixed(2), color: 'var(--secondary-color)' },
+                { label: 'ส่วนลดรวม', value: totalDiscount.toFixed(2), color: 'var(--warning-color)' },
+                { label: 'จำนวนบิล', value: totalBills },
+                { label: 'จำนวนสินค้าที่ขาย (ชิ้น)', value: totalItemsSold.toFixed(0) },
+            ];
 
-        summaryGrid.innerHTML = summaryItems.map(item => `
-            <div class="summary-item">
-                <div class="label">${item.label}</div>
-                <div class="value" style="${item.color ? `color: ${item.color};` : ''}">${item.value}</div>
-            </div>
-        `).join('');
-
+            summaryGrid.innerHTML = summaryItems.map(item => `
+                <div class="summary-item">
+                    <div class="label">${item.label}</div>
+                    <div class="value" style="${item.color ? `color: ${item.color};` : ''}">${item.value}</div>
+                </div>
+            `).join('');
+        }
+        
         // --- Render Table ---
         if (reportArray.length > 0) {
             reportArray.forEach(item => {
@@ -2158,4 +2161,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-
