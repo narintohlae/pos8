@@ -171,6 +171,13 @@
         #cart-items li { padding: 0.2rem 0.8rem; border-radius: 6px; margin-bottom: 2px; display: grid; grid-template-columns: 30px 2fr 80px 100px 100px 40px; align-items: center; gap: 0.5rem; font-size: 0.85em; transition: background-color 0.2s; border: 1px solid transparent; }
         #cart-items li:nth-child(even) { background-color: #f8f9fa; }
         #cart-items li:hover { background-color: #e9ecef; border-color: var(--border-color); }
+#cart-items li.highlight-quantity {
+    background-color: #fff3cd; /* สีเหลืองอ่อน */
+    border-left: 4px solid var(--warning-color);
+}
+#cart-items li.highlight-quantity:hover {
+    background-color: #ffeeba;
+}
         #cart-items .col-name { text-align: left; }
         #cart-items .col-seq, #cart-items .col-delete { text-align: center; }
         #cart-items .col-price, #cart-items .col-total { text-align: right; }
@@ -1542,6 +1549,9 @@ const POS_APP = {
             const totalForItem = currentPrice * quantity;
             subtotal += totalForItem;
             const li = document.createElement('li');
+            if (quantity > 1) {
+                li.classList.add('highlight-quantity');
+            }
             const stockInThisUnit = productUnit.stockInBaseUnits / productUnit.pricingUnit.conversionFactor;
             let itemInfoHTML = `<strong>${productUnit.display}</strong>`;
             if (!this.state.isRestrictedMode) { 
@@ -2148,3 +2158,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
