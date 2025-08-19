@@ -23,7 +23,7 @@
         --border-color: #dee2e6;
         --shadow: 0 4px 12px rgba(0,0,0,0.08);
         --shadow-hover: 0 6px 16px rgba(0,0,0,0.12);
-        /* [CHANGE] ลดระยะห่างหลักเพื่อให้ UI กระชับขึ้น */
+        /* [ADJUSTED] ระยะห่างหลักแบบกระชับ */
         --gap: 1.2rem; 
     }
 
@@ -34,7 +34,7 @@
         margin: 0;
         height: 100vh;
         overflow: hidden;
-        /* [CHANGE] ปรับขนาดฟอนต์หลักให้เล็กลงเล็กน้อย */
+        /* [ADJUSTED] ขนาดฟอนต์หลักแบบกระชับ */
         font-size: 0.98em; 
     }
 
@@ -54,7 +54,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 0.8rem; /* [CHANGE] ลดช่องว่างระหว่างปุ่ม */
+        gap: 0.8rem; 
         transition: width 0.3s ease;
         flex-shrink: 0;
     }
@@ -62,21 +62,21 @@
     .sidebar-btn {
         background-color: transparent;
         border: none;
-        padding: 0.8rem; /* [CHANGE] ลด Padding */
-        border-radius: 10px; /* [CHANGE] ลดความโค้งมน */
+        padding: 0.8rem; 
+        border-radius: 10px; 
         cursor: pointer;
-        width: 85%; /* [CHANGE] ปรับความกว้าง */
+        width: 85%; 
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 0.4rem; /* [CHANGE] ลดช่องว่าง */
+        gap: 0.4rem; 
         color: var(--secondary-color);
         transition: background-color 0.2s, color 0.2s;
-        font-size: 0.85em; /* [CHANGE] ลดขนาดฟอนต์ */
+        font-size: 0.85em; 
         font-weight: bold;
     }
     .sidebar-btn svg {
-        width: 26px; /* [CHANGE] ลดขนาดไอคอน */
+        width: 26px; 
         height: 26px;
         stroke-width: 2;
     }
@@ -105,7 +105,6 @@
     
     .card {
         background-color: var(--white-color);
-        /* [CHANGE] ลด Padding ของ Card */
         padding: 1.2rem; 
         border-radius: 10px;
         box-shadow: var(--shadow);
@@ -117,17 +116,22 @@
         box-sizing: border-box;
         overflow: hidden;
     }
+    
+    /* [FINAL UPDATE] เพิ่ม Padding ให้ Card ในส่วนตะกร้าใหญ่ขึ้น */
+    .cart-column .card {
+        padding: 1.5rem;
+    }
 
     h2, h3 {
         color: var(--primary-color);
         border-bottom: 2px solid var(--primary-color);
-        padding-bottom: 0.6rem; /* [CHANGE] ลด Padding */
+        padding-bottom: 0.6rem; 
         margin-top: 0;
-        margin-bottom: 1.2rem; /* [CHANGE] ลด Margin */
-        font-size: 1.4rem; /* [CHANGE] ลดขนาดฟอนต์ */
+        margin-bottom: 1.2rem; 
+        font-size: 1.4rem; 
         display: flex;
         align-items: center;
-        gap: 0.6rem; /* [CHANGE] ลดช่องว่าง */
+        gap: 0.6rem; 
         flex-shrink: 0;
     }
     
@@ -152,7 +156,6 @@
     .input-with-icon .icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--secondary-color); pointer-events: none; }
     .input-with-icon input { padding-left: 36px; }
 
-    /* [CHANGE] ปรับขนาด Input และ Select ให้กระชับขึ้น */
     input, select { 
         width: 100%; 
         padding: 0.6rem 0.8rem; 
@@ -179,12 +182,37 @@
     .search-item .highlight { background-color: var(--warning-color); border-radius: 3px; padding: 0 4px; color: var(--dark-text); }
     .search-item.selected .highlight { background-color: #ffdd72; }
 
-    .cart-header-row { display: grid; grid-template-columns: 25px 2fr 70px 90px 90px 35px; gap: 0.4rem; padding: 0 0.8rem 0.4rem 0.8rem; font-weight: bold; font-size: 0.9em; color: var(--secondary-color); border-bottom: 2px solid var(--border-color); align-items: center; text-align: center; flex-shrink: 0; }
+    /* [FINAL UPDATE] เพิ่มขนาด Font ของหัวตารางตะกร้า */
+    .cart-header-row { 
+        display: grid; 
+        grid-template-columns: 25px 2fr 70px 90px 90px 35px; 
+        gap: 0.4rem; 
+        padding: 0 0.8rem 0.4rem 0.8rem; 
+        font-weight: bold; 
+        font-size: 1em; /* ขยายจาก 0.9em */
+        color: var(--secondary-color); 
+        border-bottom: 2px solid var(--border-color); 
+        align-items: center; 
+        text-align: center; 
+        flex-shrink: 0; 
+    }
     .cart-header-row .col-name { text-align: left; }
     .cart-header-row .col-right { text-align: right; }
     
     #cart-items { list-style-type: none; padding: 0; overflow-y: auto; margin-top: 0.5rem; flex-grow: 1; }
-    #cart-items li { padding: 0.1rem 0.8rem; border-radius: 6px; margin-bottom: 2px; display: grid; grid-template-columns: 25px 2fr 70px 90px 90px 35px; align-items: center; gap: 0.4rem; font-size: 0.85em; transition: background-color 0.2s; border: 1px solid transparent; }
+    /* [FINAL UPDATE] เพิ่มขนาด Font ของรายการสินค้าในตะกร้า */
+    #cart-items li { 
+        padding: 0.2rem 0.8rem; /* เพิ่ม padding บน-ล่าง */
+        border-radius: 6px; 
+        margin-bottom: 2px; 
+        display: grid; 
+        grid-template-columns: 25px 2fr 70px 90px 90px 35px; 
+        align-items: center; 
+        gap: 0.4rem; 
+        font-size: 0.95em; /* ขยายจาก 0.85em */
+        transition: background-color 0.2s; 
+        border: 1px solid transparent; 
+    }
     #cart-items li:nth-child(even) { background-color: #f8f9fa; }
     #cart-items li:hover { background-color: #e9ecef; border-color: var(--border-color); }
     #cart-items li.highlight-quantity { background-color: #fff3cd; border-left: 4px solid var(--warning-color); }
@@ -201,16 +229,37 @@
     .delete-item-btn:hover { transform: scale(1.1); background-color: #fce8e6; }
     .delete-item-btn svg { width: 16px; height: 16px; }
 
-    .totals-section { padding-top: 0.5rem; border-top: 2px solid var(--border-color); margin-top: auto; flex-shrink: 0; }
-    .total-row { display: flex; justify-content: space-between; font-size: 1.05em; margin-bottom: 0.1rem; align-items: center; }
+    /* [FINAL UPDATE] ทำให้ส่วนสรุปยอดทั้งหมดใหญ่และโปร่งขึ้น */
+    .totals-section { 
+        padding-top: 1rem; /* เพิ่มช่องว่างด้านบน */
+        border-top: 2px solid var(--border-color); 
+        margin-top: 1rem; /* เพิ่มระยะห่างจากรายการสินค้า */
+        flex-shrink: 0; 
+    }
+    .total-row { 
+        display: flex; 
+        justify-content: space-between; 
+        font-size: 1.2em; /* ขยาย Font */
+        margin-bottom: 0.5rem; /* เพิ่มระยะห่างระหว่างบรรทัด */
+        align-items: center; 
+    }
     .total-row label, .total-row span { font-weight: bold; }
     #discount-input { width: 70px; font-size: 1em; text-align: right; height: 28px; padding: 4px 6px; }
-    #cart-total { color: var(--success-color); font-size: 1.6em; }
+    #cart-total { 
+        color: var(--success-color); 
+        font-size: 1.9em; /* ขยาย Font */
+    }
 
     .button-group { display: flex; gap: 0.8rem; margin-top: 1.2rem; }
-    .button-group-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; flex-shrink: 0; }
+    /* [FINAL UPDATE] เพิ่มระยะห่างด้านบนของกลุ่มปุ่ม */
+    .button-group-2 { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 0.8rem; 
+        flex-shrink: 0; 
+        margin-top: 1.5rem;
+    }
 
-    /* [CHANGE] ปรับขนาดปุ่มให้กระชับขึ้น */
     button { 
         background-color: var(--primary-color); 
         color: white; 
@@ -237,15 +286,14 @@
     .delete-history-btn { background-color: var(--danger-color); padding: 0.25rem 0.6rem; font-size: 0.85em; }
     .edit-history-btn { background-color: var(--info-color); padding: 0.25rem 0.6rem; font-size: 0.85em; margin-right: 5px; }
     
-    /* [CHANGE] ทำให้ตารางข้อมูลแน่นขึ้น */
     #history-table-wrapper, #report-table-wrapper { flex-grow: 1; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; }
     #history-table, #report-table { width: 100%; border-collapse: collapse; }
     #history-table th, #history-table td, #report-table th, #report-table td { 
         border-bottom: 1px solid var(--border-color); 
-        padding: 0.75rem 1rem; /* ลด Padding ในตาราง */
+        padding: 0.75rem 1rem; 
         text-align: left; 
         vertical-align: middle; 
-        font-size: 0.9em; /* ลดขนาดฟอนต์ในตาราง */
+        font-size: 0.9em; 
     }
     #history-table th, #report-table th { background-color: #f1f3f5; position: sticky; top: 0; z-index: 10; font-weight: bold; font-size: 0.95em; }
     #history-table tr:nth-child(even), #report-table tr:nth-child(even) { background-color: var(--light-bg); }
@@ -256,7 +304,6 @@
 
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
     .modal-content { background-color: var(--white-color); border-radius: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.3); width: 90%; max-width: 550px; display: flex; flex-direction: column; overflow: hidden; }
-    /* [CHANGE] ลด Padding ของ Modal */
     .modal-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
     .modal-header h3 { margin: 0; border: none; }
     .modal-body { padding: 1.5rem; flex-grow: 1; overflow-y: auto; }
