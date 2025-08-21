@@ -40,7 +40,8 @@
 
     .app-layout {
         display: grid;
-        grid-template-columns: 10% 25% 65%;
+        /* [MODIFIED] Adjusted grid for a fixed-width icon sidebar */
+        grid-template-columns: 80px 30% auto;
         height: 100%;
         width: 100%;
         box-sizing: border-box;
@@ -62,22 +63,22 @@
     .sidebar-btn {
         background-color: transparent;
         border: none;
-        padding: 0.8rem;
-        border-radius: 10px;
+        /* [MODIFIED] Adjusted for a square icon button */
+        width: 56px;
+        height: 56px;
+        padding: 0;
+        border-radius: 12px;
         cursor: pointer;
-        width: 85%;
         display: flex;
-        flex-direction: column;
         align-items: center;
-        gap: 0.4rem;
+        justify-content: center;
         color: var(--secondary-color);
         transition: background-color 0.2s, color 0.2s;
-        font-size: 0.85em;
-        font-weight: bold;
     }
     .sidebar-btn svg {
-        width: 26px;
-        height: 26px;
+        /* [MODIFIED] Made icons slightly larger */
+        width: 30px;
+        height: 30px;
         stroke-width: 2;
     }
     .sidebar-btn:hover {
@@ -348,7 +349,6 @@
     .pagination-controls button:hover:not(:disabled) { background-color: var(--primary-color); color: var(--white-color); filter: brightness(100%); }
     .pagination-controls button.active { background-color: var(--primary-color); color: var(--white-color); font-weight: bold; }
     .pagination-controls button:disabled { background-color: var(--light-bg); border-color: var(--border-color); color: var(--secondary-color); cursor: not-allowed; opacity: 0.6; }
-    .pagination-info { margin: 0 1rem; color: var(--secondary-color); font-size: 0.9em; }
 
     /* Responsive */
     @media (max-width: 992px) {
@@ -386,21 +386,18 @@
 
 <div class="app-layout">
     <aside id="app-sidebar">
+        <!-- [MODIFIED] Removed text spans from buttons -->
         <button class="sidebar-btn active" data-view="pos" title="หน้าขาย (POS)">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-            <span>หน้าขาย</span>
         </button>
         <button class="sidebar-btn" data-view="history" title="ประวัติการขาย">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"></path><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-            <span>ประวัติ</span>
         </button>
         <button class="sidebar-btn" data-view="settings" title="จัดการสินค้าและตั้งค่า">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-            <span>จัดการ</span>
         </button>
         <button class="sidebar-btn" data-view="report" title="รายงานการขาย">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-            <span>รายงาน</span>
         </button>
     </aside>
 
@@ -621,7 +618,7 @@
         if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("YOUR_")) {
             throw new Error("Firebase configuration is missing or contains placeholder values.");
         }
-        
+       
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
@@ -636,16 +633,16 @@
             } else {
                  console.log("No user is signed in. Attempting authentication...");
                  try {
-                     if (initialAuthToken) {
-                         await signInWithCustomToken(auth, initialAuthToken);
-                         console.log("Signed in with custom token.");
-                     } else {
-                         await signInAnonymously(auth);
-                         console.log("Signed in anonymously.");
-                     }
+                      if (initialAuthToken) {
+                           await signInWithCustomToken(auth, initialAuthToken);
+                           console.log("Signed in with custom token.");
+                      } else {
+                           await signInAnonymously(auth);
+                           console.log("Signed in anonymously.");
+                      }
                  } catch (authError) {
-                     console.error("Firebase Authentication Failed:", authError);
-                     window.dispatchEvent(new CustomEvent('firebase-failed', { detail: authError }));
+                      console.error("Firebase Authentication Failed:", authError);
+                      window.dispatchEvent(new CustomEvent('firebase-failed', { detail: authError }));
                  }
             }
         });
@@ -694,7 +691,7 @@ const POS_APP = {
             this.showInfoModal("ข้อผิดพลาดร้ายแรง", `ไม่สามารถเชื่อมต่อฐานข้อมูลได้: ${errorMessage}`, true);
         });
     },
-    
+   
     start() {
         console.log("Initializing main application logic...");
         const barcodeInput = document.getElementById('barcode-input');
@@ -705,7 +702,7 @@ const POS_APP = {
         if (this.state.tabs.size === 0) this.addNewSaleTab();
         this.listenForProducts();
         this.setupEventListeners();
-        this.toggleUIVisibility();  
+        this.toggleUIVisibility(); 
         this.setActiveOverlay(null); // Set initial active state for sidebar
         document.getElementById('barcode-input')?.focus();
     },
@@ -752,7 +749,7 @@ const POS_APP = {
         document.getElementById('report-modal').style.display = 'none';
         this.setActiveOverlay(null);
     },
-    
+   
     setupEventListeners() {
         // --- Sidebar Navigation ---
         document.getElementById('app-sidebar').addEventListener('click', (e) => {
@@ -879,7 +876,7 @@ const POS_APP = {
 
         // Format for date input (YYYY-MM-DD)
         const toInputFormat = (date) => date.toISOString().split('T')[0];
-        
+       
         startDateInput.value = toInputFormat(startDate);
         endDateInput.value = toInputFormat(endDate);
 
@@ -967,7 +964,7 @@ const POS_APP = {
         // Store the full, unfiltered data in the state
         this.state.currentReportData = reportArray;
         this.state.currentReportSalesDocs = salesDocs;
-        
+       
         // Clear the search input when a new report is generated
         const searchInput = document.getElementById('report-product-search');
         if (searchInput) {
@@ -1020,7 +1017,7 @@ const POS_APP = {
                 </div>
             `).join('');
         }
-        
+       
         // Filter the report data based on the search input before rendering the table
         const searchTerm = document.getElementById('report-product-search').value.toLowerCase();
         const filteredReportArray = reportArray.filter(item => 
@@ -1041,9 +1038,9 @@ const POS_APP = {
             });
         } else {
              if (searchTerm && reportArray.length > 0) {
-                reportBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">ไม่พบสินค้าที่ตรงกับคำค้นหาในรายงานนี้</td></tr>';
+                 reportBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">ไม่พบสินค้าที่ตรงกับคำค้นหาในรายงานนี้</td></tr>';
              } else {
-                reportBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">ไม่พบข้อมูลการขายในช่วงวันที่ที่เลือก</td></tr>';
+                 reportBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">ไม่พบข้อมูลการขายในช่วงวันที่ที่เลือก</td></tr>';
              }
         }
     },
@@ -1115,7 +1112,7 @@ const POS_APP = {
             try {
                 const response = await fetch(this.config.googleSheetUrl);
                 if (!response.ok) return; 
-                
+               
                 const csvText = await response.text();
                 const currentHash = await this._hashText(csvText);
                 if (this.state.lastSheetHash && this.state.lastSheetHash !== currentHash) {
@@ -1130,7 +1127,7 @@ const POS_APP = {
                 console.error('Auto-Import Error:', error);
             }
         }, intervalMinutes * 60 * 1000);
-        
+       
         (async () => {
             try {
                 const response = await fetch(this.config.googleSheetUrl);
@@ -2097,7 +2094,7 @@ const POS_APP = {
         const billCount = displayedSales.length; 
         const profit = netSales - totalCost; 
         const formatCurrency = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
-        
+       
         document.getElementById('summary-total-sales').textContent = formatCurrency(totalSales);
         document.getElementById('summary-total-discount').textContent = formatCurrency(totalDiscount);
         document.getElementById('summary-net-sales').textContent = formatCurrency(netSales);
