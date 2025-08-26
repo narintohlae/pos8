@@ -752,7 +752,7 @@ const POS_APP = {
         this.setActiveOverlay(null);
     },
    
-    setupEventListeners() {
+setupEventListeners() {
         // --- Sidebar Navigation ---
         document.getElementById('app-sidebar').addEventListener('click', (e) => {
             const button = e.target.closest('.sidebar-btn');
@@ -787,8 +787,32 @@ const POS_APP = {
         document.getElementById('report-week-btn').addEventListener('click', () => this.setReportDateRange('week'));
         document.getElementById('report-month-btn').addEventListener('click', () => this.setReportDateRange('month'));
         document.getElementById('export-report-excel-btn').addEventListener('click', () => this.exportReportToExcel());
-        document.getElementById('report-product-search').addEventListener('input', () => this.updateReportView());
 
+        // [NEW] เพิ่ม Listener สำหรับช่องค้นหาในหน้ารายงาน
+        const reportSearchInput = document.getElementById('report-product-search');
+        reportSearchInput.addEventListener('keyup', (e) => {
+            const query = e.target.value.trim();
+
+            // ตรวจสอบรหัสลับก่อน
+            if (query === '111111') {
+                this.state.isRestrictedMode = false;
+                e.target.value = '';
+                this.showInfoModal("เข้าสู่โหมดผู้ดูแล", "เปิดใช้งานฟังก์ชันการดูข้อมูลสรุปในรายงานแล้ว");
+                this.toggleUIVisibility(); // อัปเดต UI หลัก
+                this.updateReportView();   // อัปเดต UI ของหน้ารายงานโดยเฉพาะ
+                return; // หยุดการทำงานสำหรับ event นี้
+            } else if (query === '0000000000') {
+                this.state.isRestrictedMode = true;
+                e.target.value = '';
+                this.showInfoModal("ออกจากโหมดผู้ดูแล", "ปิดฟังก์ชันการดูข้อมูลสรุปในรายงาน");
+                this.toggleUIVisibility(); // อัปเดต UI หลัก
+                this.updateReportView();   // อัปเดต UI ของหน้ารายงานโดยเฉพาะ
+                return; // หยุดการทำงานสำหรับ event นี้
+            }
+
+            // ถ้าไม่ใช่รหัสลับ ให้ทำการค้นหาตามปกติ
+            this.updateReportView();
+        });
 
         // --- Existing Event Listeners ---
         document.getElementById('import-from-sheet-btn').addEventListener('click', () => this.importFromGoogleSheet(false));
@@ -804,22 +828,20 @@ const POS_APP = {
         document.getElementById('today-history-btn').addEventListener('click', this.filterHistoryForToday.bind(this));
         
         const historySearchInput = document.getElementById('history-search-input');
-        // [MODIFIED] เปลี่ยนจากการดักจับ 'input' เป็น 'keyup' เพื่อให้เช็ครหัสได้แม่นยำขึ้น
         historySearchInput.addEventListener('keyup', (e) => {
             const query = e.target.value.trim();
-            // [NEW] ตรรกะใหม่สำหรับตรวจสอบรหัสลับ
             if (query === '111111') {
-                this.state.isRestrictedMode = false; // ปิดโหมดจำกัด
-                e.target.value = ''; // ล้างค่าในช่องค้นหา
+                this.state.isRestrictedMode = false;
+                e.target.value = '';
                 this.showInfoModal("เข้าสู่โหมดผู้ดูแล", "เปิดใช้งานฟังก์ชันการแก้ไขบิลและดูสรุปยอดขายแล้ว");
-                this.toggleUIVisibility(); // อัปเดต UI ทันที
+                this.toggleUIVisibility();
             } else if (query === '0000000000') {
-                 this.state.isRestrictedMode = true; // เปิดโหมดจำกัด
-                e.target.value = ''; // ล้างค่าในช่องค้นหา
+                 this.state.isRestrictedMode = true;
+                e.target.value = '';
                 this.showInfoModal("ออกจากโหมดผู้ดูแล", "ปิดฟังก์ชันการแก้ไขบิลและซ่อนข้อมูลสรุปยอดขาย");
-                this.toggleUIVisibility(); // อัปเดต UI ทันที
+                this.toggleUIVisibility();
             }
-            this.updateHistoryDisplay(); // อัปเดตการแสดงผลตามปกติ
+            this.updateHistoryDisplay();
         });
 
         document.getElementById('export-excel-btn').addEventListener('click', this.exportToExcel.bind(this));
@@ -867,7 +889,6 @@ const POS_APP = {
             }
         });
     },
-
     // =================================================================
     // == REPORTING LOGIC
     // =================================================================
