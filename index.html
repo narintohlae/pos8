@@ -143,28 +143,42 @@
     .filter-group { display: flex; flex-direction: column; }
     .filter-group label { margin-bottom: 0.4rem; font-size: 0.9em; color: var(--secondary-color); font-weight: bold; }
 
-.summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); /* ปรับความกว้างขั้นต่ำเล็กน้อย */
-    gap: 1rem; /* [ปรับปรุง] เพิ่มระยะห่างระหว่างกล่องให้มากขึ้น */
-    text-align: center;
+/* ================================================= */
+/* ===== [NEW] CSS Rules for Report Summary Grid ===== */
+/* ================================================= */
+
+/* กฎ CSS ชุดนี้จะทำงานกับส่วนสรุปในหน้ารายงานเท่านั้น */
+
+#report-summary-section .summary-grid {
+    /* ในหน้าจอกว้าง จะพยายามจัดให้มี 3-4 กล่องต่อแถว ดูสมดุลขึ้น */
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.25rem; /* เพิ่มระยะห่างระหว่างกล่องให้มากขึ้นไปอีกสำหรับพื้นที่กว้าง */
+    padding: 0.5rem 0; /* เพิ่มระยะห่างบน-ล่างเล็กน้อย */
 }
-.summary-item {
-    background-color: #f1f3f5;
-    padding: 0.8rem 0.5rem; /* [ปรับปรุง] เพิ่มระยะห่างภายใน (บน-ล่าง) */
-    border-radius: 8px; /* [ปรับปรุง] ทำให้มุมโค้งมนมากขึ้น ดูนุ่มนวลขึ้น */
-    border: 1px solid #e0e0e0;
+
+#report-summary-section .summary-item {
+    padding: 1.25rem 1rem; /* เพิ่มระยะห่างภายในให้โปร่งขึ้นมาก */
+    border-radius: 12px; /* ทำให้มุมโค้งมนสวยงามขึ้น */
+    background-color: var(--white-color); /* เปลี่ยนเป็นพื้นหลังสีขาวให้ดูสะอาด */
+    box-shadow: var(--shadow); /* เพิ่มเงาเล็กน้อยเพื่อให้กล่องดูลอยเด่นขึ้น */
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease-in-out;
 }
-.summary-item .label {
-    font-size: 0.85em; /* [ปรับปรุง] เพิ่มขนาดตัวอักษรหัวข้อให้อ่านง่ายขึ้น */
-    color: var(--secondary-color);
-    margin-bottom: 0.4rem; /* [ปรับปรุง] เพิ่มระยะห่างจากตัวเลขมากขึ้น */
-    display: block;
+
+#report-summary-section .summary-item:hover {
+    transform: translateY(-4px); /* เพิ่มลูกเล่นตอนนำเมาส์ไปชี้ */
+    box-shadow: var(--shadow-hover);
 }
-.summary-item .value {
-    font-size: 1.6em; /* [ปรับปรุง] เพิ่มขนาดตัวเลขให้เด่นชัดขึ้น */
-    font-weight: bold;
-    color: var(--primary-color);
+
+#report-summary-section .summary-item .label {
+    font-size: 0.95em; /* เพิ่มขนาดหัวข้อให้อ่านง่ายขึ้น */
+    font-weight: 500; /* ทำให้ตัวหนังสือหนาขึ้นเล็กน้อย */
+    margin-bottom: 0.6rem; /* เพิ่มระยะห่างจากตัวเลข */
+}
+
+#report-summary-section .summary-item .value {
+    font-size: 2em; /* เพิ่มขนาดตัวเลขให้ใหญ่และเด่นชัดมาก */
+    letter-spacing: -1px; /* ทำให้ตัวเลขชิดกันสวยงามขึ้น */
 }
     #sales-summary-section h3 { font-size: 1.1rem; margin-bottom: 0.8rem; }
 
