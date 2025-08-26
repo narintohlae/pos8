@@ -399,11 +399,144 @@
         #product-list-pagination { flex-wrap: wrap; }
         .pagination-controls button { padding: 0.4rem 0.8rem; }
     }
-/* [FIX] จัดตำแหน่งหัวตารางรายงานให้ตรงกับข้อมูล */
+/* ============================================= */
+/* == [REDESIGN] Report Modal UI Enhancements == */
+/* ============================================= */
+
+/* ปรับ Layout หลักของ Modal ให้ยืดหยุ่น */
+#report-modal .modal-body {
+    display: flex;
+    flex-direction: column;
+    padding: 0; /* เอา padding เดิมออก */
+    background-color: #f8f9fa; /* เปลี่ยนสีพื้นหลัง modal */
+}
+
+#report-modal .card {
+    border: none;
+    box-shadow: none;
+    height: 100%;
+    padding: 1.5rem 2rem; /* เพิ่ม padding ให้โปร่งขึ้น */
+    background-color: transparent; /* ทำให้ card โปร่งใส */
+}
+
+/* หัวข้อหลัก */
+#report-modal h2 {
+    font-size: 1.8rem;
+    color: var(--dark-text);
+    border-bottom: none;
+    margin-bottom: 1.5rem;
+}
+
+/* ส่วน Filter ด้านบน */
+#report-modal .filter-section {
+    background-color: var(--white-color);
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* ปรับ layout ให้ยืดหยุ่น */
+    gap: 1.2rem;
+}
+
+/* ส่วนสรุปยอดขาย (รูปแบบการ์ด) */
+#report-summary-section {
+    margin-bottom: 1.5rem;
+}
+
+#report-summary-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* ปรับให้การ์ดใหญ่ขึ้น */
+    gap: 1rem;
+}
+
+#report-summary-grid .summary-item {
+    background-color: var(--white-color);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    padding: 1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+#report-summary-grid .summary-item:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+}
+#report-summary-grid .summary-item .label {
+    font-size: 0.9em;
+    font-weight: bold;
+}
+#report-summary-grid .summary-item .value {
+    font-size: 1.8em;
+    margin-top: 0.25rem;
+}
+
+
+/* ส่วนของตารางรายงาน */
+#report-table-wrapper {
+    border-radius: 10px;
+    background-color: var(--white-color);
+    box-shadow: var(--shadow);
+    border: none;
+}
+
+#report-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* ปรับสไตล์หัวตารางและข้อมูลให้สวยงาม */
+#report-table th,
+#report-table td {
+    padding: 1rem 1.25rem; /* เพิ่มระยะห่างให้สบายตา */
+    border-bottom: 1px solid var(--border-color);
+    text-align: left; /* 기본 정렬을 왼쪽으로 설정 */
+    vertical-align: middle;
+}
+
+#report-table th {
+    font-size: 1em;
+    background-color: #f1f3f5;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* ทำให้แถวข้อมูลดูง่ายขึ้น */
+#report-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+#report-table tbody tr:hover {
+    background-color: #e9ecef;
+}
+
+/* ---
+   [CRITICAL FIX] จัดตำแหน่ง Text-Align ของหัวตารางและข้อมูลให้ตรงกัน
+   --- */
+
+/* คอลัมน์ข้อความ (ชิดซ้าย) */
+#report-table th:nth-child(1),
+#report-table td:nth-child(1) {
+    text-align: left;
+}
+
+/* คอลัมน์ตัวเลข (ชิดขวา) */
+#report-table th:nth-child(2),
+#report-table td:nth-child(2),
 #report-table th:nth-child(3),
+#report-table td:nth-child(3),
 #report-table th:nth-child(4),
-#report-table th:nth-child(5) {
+#report-table td:nth-child(4),
+#report-table th:nth-child(5),
+#report-table td:nth-child(5) {
     text-align: right;
+}
+
+#report-table td:nth-child(1) strong {
+    color: var(--primary-color);
+}
+
+/* ปรับสีของกำไรให้ชัดเจน */
+#report-table td:last-child {
+    font-weight: bold;
 }
 </style>
 </head>
