@@ -1659,41 +1659,61 @@ setupEventListeners() {
             this.handleDeleteProduct(id); 
         } 
     },
-    handleInstantSearch(e) {
-        const query = e.target.value.trim();
-        this.toggleUIVisibility();
-        const quantityPattern = /^(\d+)\s*\*\s*(.+)$/;
-        const match = query.match(quantityPattern);
-        let effectiveQuery = match ? match[2].trim() : query;
-        if (effectiveQuery.length < 1) {
-            this.state.currentSearchResults = [];
-            this.state.selectedSearchIndex = -1;
-            this.displaySearchResults([], '');
-            return;
-        }
-        const translatedQuery = this.translateThaiToEng(effectiveQuery).toLowerCase();
-        const results = this.state.searchableProductUnits.map(p => {
-            let score = 0;
-            const productNameLower = p.productName.toLowerCase();
-            const barcodeLower = p.barcode.toLowerCase();
-            const productCodeLower = p.productCode.toLowerCase();
-            if (barcodeLower && barcodeLower === translatedQuery) { score += 100; }
-            if (productCodeLower && productCodeLower === translatedQuery) { score += 80; }
-            if (productNameLower.startsWith(translatedQuery)) { score += 50; }
-            else if (productNameLower.includes(translatedQuery)) { score += 20; }
-            if (barcodeLower && barcodeLower.includes(translatedQuery)) { score += 10; }
-            if (productCodeLower && productCodeLower.includes(translatedQuery)) { score += 10; }
-            if (score > 0) { return { ...p, score }; }
-            return null;
-        }).filter(Boolean);
-        results.sort((a, b) => {
-            if (b.score !== a.score) { return b.score - a.score; }
-            return a.productName.localeCompare(b.productName);
-        });
-        this.state.currentSearchResults = results;
-        this.state.selectedSearchIndex = results.length > 0 ? 0 : -1;
-        this.displaySearchResults(results, translatedQuery);
-    },
+handleInstantSearch(e) {
+    const query = e.target.value.trim();
+    this.toggleUIVisibility();
+    const quantityPattern = /^(\d+)\s*\*\s*(.+)$/;
+    const match = query.match(quantityPattern);
+    let effectiveQuery = match ? match[2].trim() : query;
+    if (effectiveQuery.length < 1) {
+        this.state.currentSearchResults = [];
+        this.state.selectedSearchIndex = -1;
+        this.displaySearchResults([], '');
+        return;
+    }
+
+    // 1. แปลงคำค้นหาเป็นตัวพิมพ์เล็ก ทั้งแบบปกติและแบบที่แปลภาษาแล้ว
+    const lowerCaseQuery = effectiveQuery.toLowerCase();
+    const translatedQuery = this.translateThaiToEng(effectiveQuery).toLowerCase();
+
+    const results = this.state.searchableProductUnits.map(p => {
+        let score = 0;
+        // 2. ใช้ _searchableText ที่รวมข้อมูลสินค้าทั้งหมดไว้แล้ว
+        const searchableText = p._searchableText;
+
+        // 3. ให้คะแนนการค้นหาตามความแม่นยำ
+        // ตรงกับบาร์โค้ดหรือรหัสสินค้าพอดี = คะแนนสูงสุด
+        if ((p.barcode && p.barcode.toLowerCase() === lowerCaseQuery) || (p.barcode && p.barcode.toLowerCase() === translatedQuery)) {
+            score = 100;
+        } else if ((p.productCode && p.productCode.toLowerCase() === lowerCaseQuery) || (p.productCode && p.productCode.toLowerCase() === translatedQuery)) {
+            score = 80;
+        // ถ้าไม่ตรง แต่มีคำค้นหาอยู่ในข้อมูลสินค้า
+        } else if (searchableText.includes(lowerCaseQuery) || searchableText.includes(translatedQuery)) {
+            // ถ้าขึ้นต้นด้วยคำค้นหาในชื่อสินค้า = คะแนนสูง
+            if (p.productName.toLowerCase().startsWith(lowerCaseQuery) || p.productName.toLowerCase().startsWith(translatedQuery)) {
+                score = 50;
+            } else {
+            // ถ้าเป็นแค่ส่วนหนึ่งของคำ = คะแนนทั่วไป
+                score = 20;
+            }
+        }
+
+        if (score > 0) {
+            return { ...p, score };
+        }
+        return null;
+    }).filter(Boolean);
+
+    // 4. จัดเรียงผลลัพธ์ตามคะแนน
+    results.sort((a, b) => {
+        if (b.score !== a.score) { return b.score - a.score; }
+        return a.productName.localeCompare(b.productName);
+    });
+
+    this.state.currentSearchResults = results;
+    this.state.selectedSearchIndex = results.length > 0 ? 0 : -1;
+    this.displaySearchResults(results, lowerCaseQuery);
+},
     displaySearchResults(results, query) {
         const resultsContainer = document.getElementById('search-results');
         resultsContainer.innerHTML = '';
