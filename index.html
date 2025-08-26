@@ -1080,7 +1080,29 @@ const POS_APP = {
         return hash;
     },
 
-    // [UPDATED] Function now handles JSON from Google Apps Script
+// [NEW] ฟังก์ชันใหม่สำหรับจัดเรียงข้อมูลและสร้าง Hash ที่เสถียร
+    async _normalizeAndHashData(jsonData) {
+        if (!jsonData || !Array.isArray(jsonData)) {
+            return 0;
+        }
+
+        // 1. สร้าง Array ใหม่ขึ้นมาเพื่อเก็บข้อมูลที่จัดเรียงแล้ว
+        const normalizedArray = jsonData.map(item => {
+            const orderedItem = {};
+            // 2. ดึง key ทั้งหมดของ object ออกมา แล้วเรียงตามตัวอักษร
+            Object.keys(item).sort().forEach(key => {
+                // 3. สร้าง object ใหม่โดยใส่ข้อมูลกลับเข้าไปตามลำดับ key ที่เรียงแล้ว
+                orderedItem[key] = item[key];
+            });
+            return orderedItem;
+        });
+
+        // 4. แปลงข้อมูลที่จัดเรียงเรียบร้อยแล้วเป็นข้อความ และนำไป Hash
+        const stableString = JSON.stringify(normalizedArray);
+        return this._hashText(stableString);
+    },
+
+    // [UPDATED] แก้ไขฟังก์ชันนี้ให้เรียกใช้ตัวจัดเรียงข้อมูลก่อน Hash
     async startAutoImportPolling() {
         if (this.state.autoImportInterval) {
             clearInterval(this.state.autoImportInterval);
@@ -1092,9 +1114,9 @@ const POS_APP = {
                 const response = await fetch(this.config.googleSheetUrl);
                 if (!response.ok) return;
 
-                // Fetch as JSON, then stringify for hashing
                 const jsonData = await response.json();
-                const currentHash = await this._hashText(JSON.stringify(jsonData));
+                // เรียกใช้ฟังก์ชันใหม่เพื่อสร้าง Hash ที่ถูกต้องและเสถียร
+                const currentHash = await this._normalizeAndHashData(jsonData);
 
                 if (this.state.lastSheetHash && this.state.lastSheetHash !== currentHash) {
                     console.log('Auto-Import: Detected changes. Importing...');
@@ -1102,21 +1124,24 @@ const POS_APP = {
                     this.importFromGoogleSheet(true);
                 } else if (!this.state.lastSheetHash) {
                     console.log('Auto-Import: Initial hash set.');
-                }
+                } else {
+                    console.log('Auto-Import: No changes detected.');
+                }
                 this.state.lastSheetHash = currentHash;
             } catch (error) {
                 console.error('Auto-Import Error:', error);
             }
         }, intervalMinutes * 60 * 1000);
-       
+        
         (async () => {
             try {
                 const response = await fetch(this.config.googleSheetUrl);
-                if(response.ok) {
-                    const jsonData = await response.json();
-                    this.state.lastSheetHash = await this._hashText(JSON.stringify(jsonData));
-                    console.log('Auto-Import: Polling started. Initial hash captured.');
-                }
+                if (response.ok) {
+                    const jsonData = await response.json();
+                    // เรียกใช้ฟังก์ชันใหม่เพื่อสร้าง Hash เริ่มต้นที่ถูกต้อง
+                    this.state.lastSheetHash = await this._normalizeAndHashData(jsonData);
+                    console.log('Auto-Import: Polling started. Initial hash captured.');
+                }
             } catch (e) {
                 console.error('Auto-Import initial fetch error:', e);
             }
