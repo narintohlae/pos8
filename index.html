@@ -143,10 +143,29 @@
     .filter-group { display: flex; flex-direction: column; }
     .filter-group label { margin-bottom: 0.4rem; font-size: 0.9em; color: var(--secondary-color); font-weight: bold; }
 
-    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem; text-align: center; }
-    .summary-item { background-color: #f1f3f5; padding: 0.5rem; border-radius: 6px; border: 1px solid #e0e0e0; }
-    .summary-item .label { font-size: 0.75em; color: var(--secondary-color); margin-bottom: 0.2rem; display: block; }
-    .summary-item .value { font-size: 1.4em; font-weight: bold; color: var(--primary-color); }
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); /* ปรับความกว้างขั้นต่ำเล็กน้อย */
+    gap: 1rem; /* [ปรับปรุง] เพิ่มระยะห่างระหว่างกล่องให้มากขึ้น */
+    text-align: center;
+}
+.summary-item {
+    background-color: #f1f3f5;
+    padding: 0.8rem 0.5rem; /* [ปรับปรุง] เพิ่มระยะห่างภายใน (บน-ล่าง) */
+    border-radius: 8px; /* [ปรับปรุง] ทำให้มุมโค้งมนมากขึ้น ดูนุ่มนวลขึ้น */
+    border: 1px solid #e0e0e0;
+}
+.summary-item .label {
+    font-size: 0.85em; /* [ปรับปรุง] เพิ่มขนาดตัวอักษรหัวข้อให้อ่านง่ายขึ้น */
+    color: var(--secondary-color);
+    margin-bottom: 0.4rem; /* [ปรับปรุง] เพิ่มระยะห่างจากตัวเลขมากขึ้น */
+    display: block;
+}
+.summary-item .value {
+    font-size: 1.6em; /* [ปรับปรุง] เพิ่มขนาดตัวเลขให้เด่นชัดขึ้น */
+    font-weight: bold;
+    color: var(--primary-color);
+}
     #sales-summary-section h3 { font-size: 1.1rem; margin-bottom: 0.8rem; }
 
 
