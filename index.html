@@ -612,7 +612,7 @@
         <div class="modal-body" style="display: flex; flex-direction: column;">
             <section class="card" style="height: 100%; box-shadow: none; border: none; padding: 0;">
                 <h2>ประวัติการขาย</h2>
-                <div class="filter-section">
+                <div class="filter-section" style="grid-template-columns: 2fr 1fr; align-items: end;">
                     <div class="filter-group">
                         <label for="history-search-input">ค้นหาบิล / สินค้า</label>
                         <div class="input-with-icon">
@@ -620,18 +620,21 @@
                             <input type="text" id="history-search-input" placeholder="รหัสการขาย หรือชื่อสินค้า...">
                         </div>
                     </div>
-                    <div class="filter-group">
-                        <label for="start-date">ช่วงวันที่</label>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <input type="date" id="start-date" title="วันที่เริ่มต้น">
-                            <input type="date" id="end-date" title="วันที่สิ้นสุด">
-                        </div>
-                    </div>
-                    <div class="filter-group">
+                     <div class="filter-group">
                         <label>&nbsp;</label>
                         <div style="display: flex; gap: 0.5rem;">
                             <button type="button" id="filter-history-btn" style="width: 100%;">ค้นหา</button>
                             <button type="button" id="today-history-btn" style="background-color: var(--info-color); width: 100%;">วันนี้</button>
+                        </div>
+                    </div>
+                    <div class="filter-group" style="grid-column: span 2;">
+                        <label for="start-date">ช่วงวันที่และเวลา</label>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="date" id="start-date" title="วันที่เริ่มต้น">
+                            <input type="time" id="start-time" title="เวลาเริ่มต้น" style="width: 110px;">
+                            <span style="color: var(--secondary-color);">-</span>
+                            <input type="date" id="end-date" title="วันที่สิ้นสุด">
+                            <input type="time" id="end-time" title="เวลาสิ้นสุด" style="width: 110px;">
                         </div>
                     </div>
                 </div>
@@ -2481,14 +2484,26 @@ handleInstantSearch(e) {
         else if (currentIndex < 0) { currentIndex = tabKeys.length - 1; } 
         this.switchTab(tabKeys[currentIndex]); 
     },
-    filterHistoryByDateTime() { 
+ filterHistoryByDateTime() { 
+        // [MODIFIED] อ่านค่าจากช่องเวลาเพิ่ม
         const startDateInput = document.getElementById('start-date').value; 
+        const startTimeInput = document.getElementById('start-time').value;
         const endDateInput = document.getElementById('end-date').value; 
-        if (!startDateInput || !endDateInput) { this.showInfoModal("ข้อมูลไม่ครบถ้วน", "กรุณาเลือกทั้งวันที่เริ่มต้นและวันที่สิ้นสุด", false); return; } 
-        const startDateTime = new Date(startDateInput);
-        startDateTime.setHours(0, 0, 0, 0);
-        const endDateTime = new Date(endDateInput);
-        endDateTime.setHours(23, 59, 59, 999);
+        const endTimeInput = document.getElementById('end-time').value;
+
+        if (!startDateInput || !endDateInput) { 
+            this.showInfoModal("ข้อมูลไม่ครบถ้วน", "กรุณาเลือกทั้งวันที่เริ่มต้นและวันที่สิ้นสุด", false); 
+            return; 
+        } 
+
+        // [MODIFIED] กำหนดเวลาเริ่มต้น/สิ้นสุดของวัน หากไม่มีการระบุเวลา
+        const startTime = startTimeInput || '00:00:00';
+        const endTime = endTimeInput || '23:59:59';
+        
+        // [MODIFIED] รวมวันที่และเวลาเพื่อสร้าง Date object ที่สมบูรณ์
+        const startDateTime = new Date(`${startDateInput}T${startTime}`);
+        const endDateTime = new Date(`${endDateInput}T${endTime}`);
+
         this.loadSalesHistoryFromFirestore(startDateTime.toISOString(), endDateTime.toISOString()); 
     },
     filterHistoryForToday() { 
@@ -2496,8 +2511,14 @@ handleInstantSearch(e) {
         todayStart.setHours(0, 0, 0, 0); 
         const todayEnd = new Date(); 
         todayEnd.setHours(23, 59, 59, 999); 
+
         document.getElementById('start-date').valueAsDate = todayStart;
         document.getElementById('end-date').valueAsDate = todayEnd;
+        
+        // [MODIFIED] ตั้งค่าช่องเวลาเป็นค่าเริ่มต้นของวัน
+        document.getElementById('start-time').value = '00:00';
+        document.getElementById('end-time').value = '23:59';
+
         document.getElementById('history-search-input').value = '';
         this.loadSalesHistoryFromFirestore(todayStart.toISOString(), todayEnd.toISOString()); 
     },
