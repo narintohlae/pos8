@@ -789,6 +789,7 @@ const POS_APP = {
         document.getElementById('export-report-excel-btn').addEventListener('click', () => this.exportReportToExcel());
         document.getElementById('report-product-search').addEventListener('input', () => this.updateReportView());
 
+
         // --- Existing Event Listeners ---
         document.getElementById('import-from-sheet-btn').addEventListener('click', () => this.importFromGoogleSheet(false));
         const barcodeInput = document.getElementById('barcode-input');
@@ -801,7 +802,26 @@ const POS_APP = {
         document.querySelector('.clear-cart').addEventListener('click', this.showClearCartConfirmModal.bind(this));
         document.getElementById('filter-history-btn').addEventListener('click', this.filterHistoryByDateTime.bind(this));
         document.getElementById('today-history-btn').addEventListener('click', this.filterHistoryForToday.bind(this));
-        document.getElementById('history-search-input').addEventListener('input', () => this.updateHistoryDisplay());
+        
+        const historySearchInput = document.getElementById('history-search-input');
+        // [MODIFIED] เปลี่ยนจากการดักจับ 'input' เป็น 'keyup' เพื่อให้เช็ครหัสได้แม่นยำขึ้น
+        historySearchInput.addEventListener('keyup', (e) => {
+            const query = e.target.value.trim();
+            // [NEW] ตรรกะใหม่สำหรับตรวจสอบรหัสลับ
+            if (query === '111111') {
+                this.state.isRestrictedMode = false; // ปิดโหมดจำกัด
+                e.target.value = ''; // ล้างค่าในช่องค้นหา
+                this.showInfoModal("เข้าสู่โหมดผู้ดูแล", "เปิดใช้งานฟังก์ชันการแก้ไขบิลและดูสรุปยอดขายแล้ว");
+                this.toggleUIVisibility(); // อัปเดต UI ทันที
+            } else if (query === '0000000000') {
+                 this.state.isRestrictedMode = true; // เปิดโหมดจำกัด
+                e.target.value = ''; // ล้างค่าในช่องค้นหา
+                this.showInfoModal("ออกจากโหมดผู้ดูแล", "ปิดฟังก์ชันการแก้ไขบิลและซ่อนข้อมูลสรุปยอดขาย");
+                this.toggleUIVisibility(); // อัปเดต UI ทันที
+            }
+            this.updateHistoryDisplay(); // อัปเดตการแสดงผลตามปกติ
+        });
+
         document.getElementById('export-excel-btn').addEventListener('click', this.exportToExcel.bind(this));
         document.getElementById('clear-all-history-btn').addEventListener('click', this.showClearOptionsModal.bind(this));
         document.getElementById('cash-received-input').addEventListener('input', this.calculateChange.bind(this));
@@ -2151,7 +2171,8 @@ const POS_APP = {
             const shouldShow = !this.state.isRestrictedMode && !isSearching;
             summarySection.style.display = shouldShow ? 'block' : 'none';
         }
-        this.updateHistoryDisplay(); 
+        // การเรียก updateHistoryDisplay() จะถูกเรียกจาก event listener ของมันเองอยู่แล้ว
+        // จึงไม่จำเป็นต้องเรียกซ้ำที่นี่ แต่การเรียก updateCartDisplay() ยังจำเป็นอยู่
         this.updateCartDisplay(); 
     },
     addNewSaleTab(customName = '') {
