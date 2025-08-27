@@ -1881,15 +1881,11 @@ handleInstantSearch(e) {
         resultsContainer.innerHTML = '';
         resultsContainer.classList.toggle('has-results', results.length > 0);
         if (results.length === 0) return;
-        const queryRegex = query ? new RegExp(`(${this.escapeRegex(query)})`, 'gi') : null;
         results.slice(0, 20).forEach((productUnit, index) => {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'search-item';
             if (index === this.state.selectedSearchIndex) itemDiv.classList.add('selected');
             let highlightedDisplay = this.escapeHtml(productUnit.display);
-            if (queryRegex) {
-                highlightedDisplay = highlightedDisplay.replace(queryRegex, '<span class="highlight">$1</span>');
-            }
             itemDiv.innerHTML = `<div><span>${highlightedDisplay}</span></div><span class="price" style="color:var(--success-color); font-weight:bold;">${parseFloat(productUnit.price).toFixed(2)} ฿</span>`;
             itemDiv.onclick = () => {
                 const inputValue = document.getElementById('barcode-input').value.trim();
@@ -2381,10 +2377,6 @@ handleInstantSearch(e) {
                 }
                 let itemDetails = sale.items.map(item => {
                     let name = this.escapeHtml(item.name);
-                    if (searchFilter && name.toLowerCase().includes(searchFilter)) {
-                        const regex = new RegExp(`(${this.escapeRegex(searchFilter)})`, 'gi');
-                        name = name.replace(regex, '<span class="highlight">$1</span>');
-                    }
                     return `${name} (x${item.quantity})`;
                 }).join('<br>');
                 const discountAmount = sale.discount ? sale.discount.toFixed(2) : '0.00';
