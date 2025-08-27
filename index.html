@@ -1188,18 +1188,32 @@ setupEventListeners() {
     updateReportView() {
         const reportArray = this.state.currentReportData;
         const salesDocs = this.state.currentReportSalesDocs;
+        const reportTable = document.getElementById('report-table');
+        const reportHead = reportTable.querySelector('thead');
         const reportBody = document.getElementById('report-body');
         const summaryGrid = document.getElementById('report-summary-grid');
         const summarySection = document.getElementById('report-summary-section');
+        
         reportBody.innerHTML = '';
         summaryGrid.innerHTML = '';
 
+        const isRestricted = this.state.isRestrictedMode;
+
+        // Update table header based on mode
+        if (isRestricted) {
+            reportHead.innerHTML = '<tr><th>สินค้า</th><th>จำนวนที่ขาย (หน่วยเล็ก)</th><th>ยอดขายรวม</th><th>ต้นทุนรวม</th></tr>';
+        } else {
+            reportHead.innerHTML = '<tr><th>สินค้า</th><th>จำนวนที่ขาย (หน่วยเล็ก)</th><th>ยอดขายรวม</th><th>ต้นทุนรวม</th><th>กำไรรวม</th></tr>';
+        }
+        
+        const colCount = isRestricted ? 4 : 5;
+
         if (!reportArray || !salesDocs) {
-            reportBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">ไม่มีข้อมูลรายงานให้แสดงผล</td></tr>';
+            reportBody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center; padding: 2rem;">ไม่มีข้อมูลรายงานให้แสดงผล</td></tr>`;
             return;
         }
 
-        if (this.state.isRestrictedMode) {
+        if (isRestricted) {
             summarySection.style.display = 'none';
         } else {
             summarySection.style.display = 'block';
@@ -1235,19 +1249,22 @@ setupEventListeners() {
         if (filteredReportArray.length > 0) {
             filteredReportArray.forEach(item => {
                 const row = reportBody.insertRow();
-                row.innerHTML = `
+                let rowHTML = `
                     <td><strong>${item.productName}</strong></td>
                     <td>${item.totalQuantity.toFixed(2)} ${item.baseUnit}</td>
                     <td>${item.totalRevenue.toFixed(2)}</td>
                     <td>${item.totalCost.toFixed(2)}</td>
-                    <td style="font-weight:bold; color: ${item.totalProfit >= 0 ? 'var(--success-color)' : 'var(--danger-color)'};">${item.totalProfit.toFixed(2)}</td>
                 `;
+                if (!isRestricted) {
+                    rowHTML += `<td style="font-weight:bold; color: ${item.totalProfit >= 0 ? 'var(--success-color)' : 'var(--danger-color)'};">${item.totalProfit.toFixed(2)}</td>`;
+                }
+                row.innerHTML = rowHTML;
             });
         } else {
              if (searchTerm && reportArray.length > 0) {
-                 reportBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">ไม่พบสินค้าที่ตรงกับคำค้นหาในรายงานนี้</td></tr>';
+                 reportBody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center; padding: 2rem;">ไม่พบสินค้าที่ตรงกับคำค้นหาในรายงานนี้</td></tr>`;
              } else {
-                 reportBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">ไม่พบข้อมูลการขายในช่วงวันที่ที่เลือก</td></tr>';
+                 reportBody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center; padding: 2rem;">ไม่พบข้อมูลการขายในช่วงวันที่ที่เลือก</td></tr>`;
              }
         }
     },
@@ -2012,47 +2029,49 @@ handleInstantSearch(e) {
             this.updatePlaceholderHint(); 
         } 
     },
-    handleSearchKeyDown(e) { 
-        if (e.key === 'Enter') { 
-            e.preventDefault(); 
-            const inputValue = document.getElementById('barcode-input').value.trim(); 
-            if (inputValue === '0000000000') { 
-                this.state.isRestrictedMode = true; 
-                document.getElementById('barcode-input').value = ''; 
-                this.displaySearchResults([], ''); 
-                this.toggleUIVisibility(); 
-                return; 
-            } else if (inputValue === '111111') { 
-                this.state.isRestrictedMode = false; 
-                document.getElementById('barcode-input').value = ''; 
-                this.displaySearchResults([], ''); 
-                this.toggleUIVisibility(); 
-                return; 
-            } 
-            const quantityPattern = /^(\d+)\s*\*\s*(.+)$/; 
-            const match = inputValue.match(quantityPattern); 
-            if (this.state.currentSearchResults.length > 0 && this.state.selectedSearchIndex !== -1) { 
-                let quantityToAdd = 1; 
-                if (match) { 
-                    quantityToAdd = parseInt(match[1], 10); 
-                } 
-                this.addToCart(this.state.currentSearchResults[this.state.selectedSearchIndex], quantityToAdd); 
-                document.getElementById('barcode-input').value = ''; 
-                this.state.currentSearchResults = []; 
-                this.state.selectedSearchIndex = -1; 
-                this.displaySearchResults([], ''); 
+    handleSearchKeyDown(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const inputValue = document.getElementById('barcode-input').value.trim();
+            if (inputValue === '0000000000') {
+                this.state.isRestrictedMode = true;
+                document.getElementById('barcode-input').value = '';
+                this.displaySearchResults([], '');
                 this.toggleUIVisibility();
-            } else if (this.getActiveCart().length > 0 && inputValue === '') { 
-                document.getElementById('discount-input').focus(); 
-                document.getElementById('discount-input').select(); 
-            } 
-        } else if (e.key === 'ArrowDown') { 
-            e.preventDefault(); 
-            this.navigateSearchResults(1); 
-        } else if (e.key === 'ArrowUp') { 
-            e.preventDefault(); 
-            this.navigateSearchResults(-1); 
-        } 
+                this.updateHistoryDisplay(); // Refresh history view
+                return;
+            } else if (inputValue === '111111') {
+                this.state.isRestrictedMode = false;
+                document.getElementById('barcode-input').value = '';
+                this.displaySearchResults([], '');
+                this.toggleUIVisibility();
+                this.updateHistoryDisplay(); // Refresh history view
+                return;
+            }
+            const quantityPattern = /^(\d+)\s*\*\s*(.+)$/;
+            const match = inputValue.match(quantityPattern);
+            if (this.state.currentSearchResults.length > 0 && this.state.selectedSearchIndex !== -1) {
+                let quantityToAdd = 1;
+                if (match) {
+                    quantityToAdd = parseInt(match[1], 10);
+                }
+                this.addToCart(this.state.currentSearchResults[this.state.selectedSearchIndex], quantityToAdd);
+                document.getElementById('barcode-input').value = '';
+                this.state.currentSearchResults = [];
+                this.state.selectedSearchIndex = -1;
+                this.displaySearchResults([], '');
+                this.toggleUIVisibility();
+            } else if (this.getActiveCart().length > 0 && inputValue === '') {
+                document.getElementById('discount-input').focus();
+                document.getElementById('discount-input').select();
+            }
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            this.navigateSearchResults(1);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            this.navigateSearchResults(-1);
+        }
     },
     handleGlobalKeyDown(e) { 
         if (this.state.activeModalCloseHandler) return; 
