@@ -1191,6 +1191,8 @@ setupEventListeners() {
         const reportBody = document.getElementById('report-body');
         const summaryGrid = document.getElementById('report-summary-grid');
         const summarySection = document.getElementById('report-summary-section');
+        const reportTableHeaders = document.querySelector('#report-table thead tr');
+
         reportBody.innerHTML = '';
         summaryGrid.innerHTML = '';
 
@@ -1199,10 +1201,14 @@ setupEventListeners() {
             return;
         }
 
+        const colspan = this.state.isRestrictedMode ? 4 : 5;
+
         if (this.state.isRestrictedMode) {
             summarySection.style.display = 'none';
+            if (reportTableHeaders) reportTableHeaders.children[4].style.display = 'none';
         } else {
             summarySection.style.display = 'block';
+             if (reportTableHeaders) reportTableHeaders.children[4].style.display = '';
             const totalRevenue = salesDocs.reduce((sum, sale) => sum + sale.total, 0);
             const totalDiscount = salesDocs.reduce((sum, sale) => sum + sale.discount, 0);
             const totalCost = reportArray.reduce((sum, item) => sum + item.totalCost, 0);
@@ -1235,19 +1241,22 @@ setupEventListeners() {
         if (filteredReportArray.length > 0) {
             filteredReportArray.forEach(item => {
                 const row = reportBody.insertRow();
-                row.innerHTML = `
+                let rowHTML = `
                     <td><strong>${item.productName}</strong></td>
                     <td>${item.totalQuantity.toFixed(2)} ${item.baseUnit}</td>
                     <td>${item.totalRevenue.toFixed(2)}</td>
                     <td>${item.totalCost.toFixed(2)}</td>
-                    <td style="font-weight:bold; color: ${item.totalProfit >= 0 ? 'var(--success-color)' : 'var(--danger-color)'};">${item.totalProfit.toFixed(2)}</td>
                 `;
+                if (!this.state.isRestrictedMode) {
+                    rowHTML += `<td style="font-weight:bold; color: ${item.totalProfit >= 0 ? 'var(--success-color)' : 'var(--danger-color)'};">${item.totalProfit.toFixed(2)}</td>`;
+                }
+                row.innerHTML = rowHTML;
             });
         } else {
              if (searchTerm && reportArray.length > 0) {
-                 reportBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">ไม่พบสินค้าที่ตรงกับคำค้นหาในรายงานนี้</td></tr>';
+                 reportBody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center; padding: 2rem;">ไม่พบสินค้าที่ตรงกับคำค้นหาในรายงานนี้</td></tr>`;
              } else {
-                 reportBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">ไม่พบข้อมูลการขายในช่วงวันที่ที่เลือก</td></tr>';
+                 reportBody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center; padding: 2rem;">ไม่พบข้อมูลการขายในช่วงวันที่ที่เลือก</td></tr>`;
              }
         }
     },
@@ -1881,11 +1890,15 @@ handleInstantSearch(e) {
         resultsContainer.innerHTML = '';
         resultsContainer.classList.toggle('has-results', results.length > 0);
         if (results.length === 0) return;
+        const queryRegex = query ? new RegExp(`(${this.escapeRegex(query)})`, 'gi') : null;
         results.slice(0, 20).forEach((productUnit, index) => {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'search-item';
             if (index === this.state.selectedSearchIndex) itemDiv.classList.add('selected');
             let highlightedDisplay = this.escapeHtml(productUnit.display);
+            if (queryRegex) {
+                highlightedDisplay = highlightedDisplay.replace(queryRegex, '<span class="highlight">$1</span>');
+            }
             itemDiv.innerHTML = `<div><span>${highlightedDisplay}</span></div><span class="price" style="color:var(--success-color); font-weight:bold;">${parseFloat(productUnit.price).toFixed(2)} ฿</span>`;
             itemDiv.onclick = () => {
                 const inputValue = document.getElementById('barcode-input').value.trim();
@@ -2377,6 +2390,10 @@ handleInstantSearch(e) {
                 }
                 let itemDetails = sale.items.map(item => {
                     let name = this.escapeHtml(item.name);
+                    if (searchFilter && name.toLowerCase().includes(searchFilter)) {
+                        const regex = new RegExp(`(${this.escapeRegex(searchFilter)})`, 'gi');
+                        name = name.replace(regex, '<span class="highlight">$1</span>');
+                    }
                     return `${name} (x${item.quantity})`;
                 }).join('<br>');
                 const discountAmount = sale.discount ? sale.discount.toFixed(2) : '0.00';
