@@ -581,7 +581,7 @@
                 ค้นหาสินค้า
             </h2>
             <div class="form-group">
-                <label for="barcode-input">F2:บิลใหม่ | F5:ค้นหา | F8:จำนวน | F9:ชำระเงิน | F11:ส่วนลด | Del:ล้าง/ปิด</label>
+                <label for="barcode-input">F2:บิลใหม่ | F3:ประวัติ | F5:ค้นหา | F8:จำนวน | F9:ชำระเงิน | F11:ส่วนลด | Del:ล้าง/ปิด</label>
                 <input type="text" id="barcode-input" inputmode="latin" placeholder="[ENG] ค้นหา... (เช่น: 31234.)" data-base-placeholder="ค้นหา... (เช่น: 31234.)" autofocus>
             </div>
             <div id="sales-summary-section" style="display: none; margin-bottom: 1rem;">
@@ -2103,6 +2103,14 @@ handleInstantSearch(e) {
         } else if (e.key === 'F2') { 
             e.preventDefault(); 
             this.addNewSaleTab(); 
+        } else if (e.key === 'F3') {
+            e.preventDefault();
+            this.showHistoryModal();
+            const historySearchInput = document.getElementById('history-search-input');
+            if (historySearchInput) {
+                historySearchInput.focus();
+                historySearchInput.select();
+            }
         } else if (e.key === 'F8') { 
             e.preventDefault();
             const cartItems = document.querySelectorAll('#cart-items li');
