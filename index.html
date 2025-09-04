@@ -509,8 +509,8 @@
 }
 
 /* ---
-   [CRITICAL FIX] จัดตำแหน่ง Text-Align ของหัวตารางและข้อมูลให้ตรงกัน
-   --- */
+    [CRITICAL FIX] จัดตำแหน่ง Text-Align ของหัวตารางและข้อมูลให้ตรงกัน
+    --- */
 
 /* คอลัมน์ข้อความ (ชิดซ้าย) */
 #report-table th:nth-child(1),
@@ -581,8 +581,8 @@
                 ค้นหาสินค้า
             </h2>
             <div class="form-group">
-                <label for="barcode-input">F2:บิลใหม่ | F3:ประวัติ | F5:ค้นหา | F8:จำนวน | F9:ชำระเงิน | F11:ส่วนลด | Del:ล้าง/ปิด</label>
-                <input type="text" id="barcode-input" inputmode="latin" placeholder="[ENG] ค้นหา... (เช่น: 31234.)" data-base-placeholder="ค้นหา... (เช่น: 31234.)" autofocus>
+                <label for="barcode-input">F2:บิลใหม่ | F3:ค้นหา | F5:ประวัติ | F8:จำนวน | F9:ชำระเงิน | F11:ส่วนลด | Del:ล้าง/ปิด</label>
+                <input type="text" id="barcode-input" placeholder="ค้นหา... (เช่น: 31234.)" data-base-placeholder="ค้นหา... (เช่น: 31234.)" autofocus>
             </div>
             <div id="sales-summary-section" style="display: none; margin-bottom: 1rem;">
                 <h3 id="summary-title" style="font-size: 1.2rem; margin-bottom: 1rem;">สรุปยอดขาย (วันนี้)</h3>
@@ -814,16 +814,16 @@
             } else {
                  console.log("No user is signed in. Attempting authentication...");
                  try {
-                       if (initialAuthToken) {
-                           await signInWithCustomToken(auth, initialAuthToken);
-                           console.log("Signed in with custom token.");
-                       } else {
-                           await signInAnonymously(auth);
-                           console.log("Signed in anonymously.");
-                       }
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                            console.log("Signed in with custom token.");
+                        } else {
+                            await signInAnonymously(auth);
+                            console.log("Signed in anonymously.");
+                        }
                  } catch (authError) {
-                       console.error("Firebase Authentication Failed:", authError);
-                       window.dispatchEvent(new CustomEvent('firebase-failed', { detail: authError }));
+                        console.error("Firebase Authentication Failed:", authError);
+                        window.dispatchEvent(new CustomEvent('firebase-failed', { detail: authError }));
                  }
             }
         });
@@ -838,7 +838,8 @@ const POS_APP = {
     config: {
         // [UPDATED] URL ชี้ไปยัง Google Apps Script
         googleSheetUrl: 'https://script.google.com/macros/s/AKfycbxmfug0KSRUqLMpDgb2LLbZRtdbOmj3P8gdmh1ZyL65aLB-wsmRQ6AJZRWSHdjGA3aZ/exec',
-        thaiToEngMap: { 'ๅ': '1', '/': '2', '-': '3', 'ภ': '4', 'ถ': '5', 'ุ': '6', 'ึ': '7', 'ค': '8', 'ต': '9', 'จ': '0', 'ข': '-', 'ช': '=', 'ๆ': 'q', 'ไ': 'w', 'ำ': 'e', 'พ': 'r', 'ะ': 't', 'ั': 'y', 'ี': 'u', 'ร': 'i', 'น': 'o', 'ย': 'p', 'บ': '[', 'ล': ']', 'ฟ': 'a', 'ห': 's', 'ก': 'd', 'ด': 'f', 'เ': 'g', '้': 'h', '่': 'j', 'า': 'k', 'ส': 'l', 'ว': ';', 'ง': "'", 'ผ': 'z', 'ป': 'x', 'แ': 'c', 'อ': 'v', 'ิ': 'b', 'ท': 'n', 'ม': 'm', 'ใ': ',', 'ฝ': '.', 'ซ': '/' }
+        // [REMOVED] ปิดระบบแปลงภาษา จึงไม่จำเป็นต้องใช้ Map นี้
+        // thaiToEngMap: { 'ๅ': '1', '/': '2', '-': '3', 'ภ': '4', 'ถ': '5', 'ุ': '6', 'ึ': '7', 'ค': '8', 'ต': '9', 'จ': '0', 'ข': '-', 'ช': '=', 'ๆ': 'q', 'ไ': 'w', 'ำ': 'e', 'พ': 'r', 'ะ': 't', 'ั': 'y', 'ี': 'u', 'ร': 'i', 'น': 'o', 'ย': 'p', 'บ': '[', 'ล': ']', 'ฟ': 'a', 'ห': 's', 'ก': 'd', 'ด': 'f', 'เ': 'g', '้': 'h', '่': 'j', 'า': 'k', 'ส': 'l', 'ว': ';', 'ง': "'", 'ผ': 'z', 'ป': 'x', 'แ': 'c', 'อ': 'v', 'ิ': 'b', 'ท': 'n', 'ม': 'm', 'ใ': ',', 'ฝ': '.', 'ซ': '/' }
     },
     state: {
         activeOverlay: null,
@@ -851,8 +852,9 @@ const POS_APP = {
         tabs: new Map(),
         activeTabId: null,
         isRestrictedMode: true,
-        keyboardLayout: 'ENG',
-        basePlaceholder: 'ค้นหา...',
+        // [REMOVED] ปิดระบบแปลงภาษา จึงไม่จำเป็นต้องใช้ state เหล่านี้
+        // keyboardLayout: 'ENG', 
+        // basePlaceholder: 'ค้นหา...',
         productsFromFirestore: [],
         searchableProductUnits: [],
         unsubscribeProducts: null,
@@ -876,9 +878,9 @@ const POS_APP = {
     
     start() {
         console.log("Initializing main application logic...");
-        const barcodeInput = document.getElementById('barcode-input');
-        if (barcodeInput) this.state.basePlaceholder = barcodeInput.getAttribute('data-base-placeholder');
-        this.updatePlaceholderHint();
+        // const barcodeInput = document.getElementById('barcode-input');
+        // if (barcodeInput) this.state.basePlaceholder = barcodeInput.getAttribute('data-base-placeholder');
+        // this.updatePlaceholderHint(); // [REMOVED] ไม่จำเป็นต้องอัปเดต placeholder แล้ว
         this.clearDataOnStart();
         this.filterHistoryForToday();
         if (this.state.tabs.size === 0) this.addNewSaleTab();
@@ -1000,7 +1002,7 @@ setupEventListeners() {
         const barcodeInput = document.getElementById('barcode-input');
         barcodeInput.addEventListener('input', this.handleInstantSearch.bind(this));
         barcodeInput.addEventListener('keydown', this.handleSearchKeyDown.bind(this));
-        barcodeInput.addEventListener('keydown', this.detectKeyboardLayout.bind(this));
+        // barcodeInput.addEventListener('keydown', this.detectKeyboardLayout.bind(this)); // [REMOVED] ปิดระบบตรวจจับภาษา
         document.getElementById('discount-input').addEventListener('input', this.updateCartOnInput.bind(this));
         document.getElementById('discount-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this.showPaymentModal(); }});
         document.querySelector('.finish-sale').addEventListener('click', this.showPaymentModal.bind(this));
@@ -1838,6 +1840,7 @@ setupEventListeners() {
             this.handleDeleteProduct(id); 
         } 
     },
+// [MODIFIED] ปรับปรุงฟังก์ชันค้นหาให้ไม่ต้องแปลงภาษา
 handleInstantSearch(e) {
     const query = e.target.value.trim();
     this.toggleUIVisibility();
@@ -1851,28 +1854,20 @@ handleInstantSearch(e) {
         return;
     }
 
-    // 1. แปลงคำค้นหาเป็นตัวพิมพ์เล็ก ทั้งแบบปกติและแบบที่แปลภาษาแล้ว
     const lowerCaseQuery = effectiveQuery.toLowerCase();
-    const translatedQuery = this.translateThaiToEng(effectiveQuery).toLowerCase();
-
+    
     const results = this.state.searchableProductUnits.map(p => {
         let score = 0;
-        // 2. ใช้ _searchableText ที่รวมข้อมูลสินค้าทั้งหมดไว้แล้ว
         const searchableText = p._searchableText;
 
-        // 3. ให้คะแนนการค้นหาตามความแม่นยำ
-        // ตรงกับบาร์โค้ดหรือรหัสสินค้าพอดี = คะแนนสูงสุด
-        if ((p.barcode && p.barcode.toLowerCase() === lowerCaseQuery) || (p.barcode && p.barcode.toLowerCase() === translatedQuery)) {
+        if (p.barcode && p.barcode.toLowerCase() === lowerCaseQuery) {
             score = 100;
-        } else if ((p.productCode && p.productCode.toLowerCase() === lowerCaseQuery) || (p.productCode && p.productCode.toLowerCase() === translatedQuery)) {
+        } else if (p.productCode && p.productCode.toLowerCase() === lowerCaseQuery) {
             score = 80;
-        // ถ้าไม่ตรง แต่มีคำค้นหาอยู่ในข้อมูลสินค้า
-        } else if (searchableText.includes(lowerCaseQuery) || searchableText.includes(translatedQuery)) {
-            // ถ้าขึ้นต้นด้วยคำค้นหาในชื่อสินค้า = คะแนนสูง
-            if (p.productName.toLowerCase().startsWith(lowerCaseQuery) || p.productName.toLowerCase().startsWith(translatedQuery)) {
+        } else if (searchableText.includes(lowerCaseQuery)) {
+            if (p.productName.toLowerCase().startsWith(lowerCaseQuery)) {
                 score = 50;
             } else {
-            // ถ้าเป็นแค่ส่วนหนึ่งของคำ = คะแนนทั่วไป
                 score = 20;
             }
         }
@@ -1883,7 +1878,6 @@ handleInstantSearch(e) {
         return null;
     }).filter(Boolean);
 
-    // 4. จัดเรียงผลลัพธ์ตามคะแนน
     results.sort((a, b) => {
         if (b.score !== a.score) { return b.score - a.score; }
         return a.productName.localeCompare(b.productName);
@@ -2014,21 +2008,22 @@ handleInstantSearch(e) {
             this.state.activeModalCloseHandler = null; 
         } 
     },
-    updatePlaceholderHint() { 
-        const input = document.getElementById('barcode-input'); 
-        if (input) input.placeholder = `[${this.state.keyboardLayout}] ${this.state.basePlaceholder}`; 
-    },
-    detectKeyboardLayout(e) { 
-        if (e.key.length !== 1 || e.ctrlKey || e.altKey || e.metaKey) return; 
-        const isThai = /[ก-๙]/.test(e.key); 
-        if (isThai && this.state.keyboardLayout !== 'TH') { 
-            this.state.keyboardLayout = 'TH'; 
-            this.updatePlaceholderHint(); 
-        } else if (!isThai && this.state.keyboardLayout !== 'ENG') { 
-            this.state.keyboardLayout = 'ENG'; 
-            this.updatePlaceholderHint(); 
-        } 
-    },
+    // [REMOVED] ฟังก์ชันที่ไม่ใช้แล้ว
+    // updatePlaceholderHint() { 
+    //     const input = document.getElementById('barcode-input'); 
+    //     if (input) input.placeholder = `[${this.state.keyboardLayout}] ${this.state.basePlaceholder}`; 
+    // },
+    // detectKeyboardLayout(e) { 
+    //     if (e.key.length !== 1 || e.ctrlKey || e.altKey || e.metaKey) return; 
+    //     const isThai = /[ก-๙]/.test(e.key); 
+    //     if (isThai && this.state.keyboardLayout !== 'TH') { 
+    //         this.state.keyboardLayout = 'TH'; 
+    //         this.updatePlaceholderHint(); 
+    //     } else if (!isThai && this.state.keyboardLayout !== 'ENG') { 
+    //         this.state.keyboardLayout = 'ENG'; 
+    //         this.updatePlaceholderHint(); 
+    //     } 
+    // },
     handleSearchKeyDown(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -2093,9 +2088,6 @@ handleInstantSearch(e) {
         } else if (e.key === 'F9') { 
             e.preventDefault(); 
             this.showPaymentModal(); 
-        } else if (e.key === 'F5') { 
-            e.preventDefault(); 
-            document.getElementById('barcode-input').focus(); 
         } else if (e.key === 'F11') { 
             e.preventDefault(); 
             document.getElementById('discount-input').focus(); 
@@ -2103,7 +2095,12 @@ handleInstantSearch(e) {
         } else if (e.key === 'F2') { 
             e.preventDefault(); 
             this.addNewSaleTab(); 
-        } else if (e.key === 'F3') {
+        } 
+        // [MODIFIED] สลับ F3 และ F5
+        else if (e.key === 'F3') { 
+            e.preventDefault(); 
+            document.getElementById('barcode-input').focus(); 
+        } else if (e.key === 'F5') {
             e.preventDefault();
             this.showHistoryModal();
             const historySearchInput = document.getElementById('history-search-input');
@@ -2111,7 +2108,8 @@ handleInstantSearch(e) {
                 historySearchInput.focus();
                 historySearchInput.select();
             }
-        } else if (e.key === 'F8') { 
+        } 
+        else if (e.key === 'F8') { 
             e.preventDefault();
             const cartItems = document.querySelectorAll('#cart-items li');
             if (cartItems.length > 0) {
@@ -2151,7 +2149,8 @@ handleInstantSearch(e) {
             } 
         }); 
     },
-    translateThaiToEng(input) { return input.split('').map(char => this.config.thaiToEngMap[char] || char).join(''); },
+    // [REMOVED] ฟังก์ชันที่ไม่ใช้แล้ว
+    // translateThaiToEng(input) { return input.split('').map(char => this.config.thaiToEngMap[char] || char).join(''); },
     getActiveCart() { if (!this.state.activeTabId || !this.state.tabs.has(this.state.activeTabId)) return []; return this.state.tabs.get(this.state.activeTabId).cart; },
     getActiveDiscount() { if (!this.state.activeTabId || !this.state.tabs.has(this.state.activeTabId)) return 0; return this.state.tabs.get(this.state.activeTabId).discount; },
     setActiveDiscount(value) { if (this.state.activeTabId && this.state.tabs.has(this.state.activeTabId)) { this.state.tabs.get(this.state.activeTabId).discount = value; } },
@@ -2522,7 +2521,7 @@ handleInstantSearch(e) {
         else if (currentIndex < 0) { currentIndex = tabKeys.length - 1; } 
         this.switchTab(tabKeys[currentIndex]); 
     },
- filterHistoryByDateTime() { 
+filterHistoryByDateTime() { 
         // [MODIFIED] อ่านค่าจากช่องเวลาเพิ่ม
         const startDateInput = document.getElementById('start-date').value; 
         const startTimeInput = document.getElementById('start-time').value;
