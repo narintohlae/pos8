@@ -39,66 +39,64 @@
 
     .app-layout {
         display: grid;
-        /* [MODIFIED] Adjusted grid for a fixed-width icon sidebar */
-        /* [MODIFIED] Further narrowed the search column from 30% to 24% */
-        grid-template-columns: 92px 24% auto;
+        /* [MODIFIED] เปลี่ยนเป็น Layout 2 คอลัมน์ หลังย้าย Sidebar */
+        grid-template-columns: 30% auto;
         height: 100%;
         width: 100%;
         box-sizing: border-box;
     }
 
-    /* --- Sidebar --- */
+    /* --- [MODIFIED] Sidebar (ย้ายไปด้านล่างของ Search Column) --- */
     #app-sidebar {
-        background-color: var(--white-color);
-        border-right: 1px solid var(--border-color);
-        padding: var(--gap) 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* แบ่ง 3 ปุ่มให้เท่ากัน */
         gap: 0.8rem;
-        transition: width 0.3s ease;
-        flex-shrink: 0;
+        margin-top: 1.2rem;
+        padding-top: 1.2rem;
+        border-top: 2px solid var(--border-color);
     }
 
     .sidebar-btn {
-        background-color: transparent;
-        border: none;
-        /* [MODIFIED] Adjusted for a square icon button */
-        width: 64px;
-        height: 64px;
-        padding: 0;
-        border-radius: 12px;
+        background-color: var(--light-bg);
+        border: 1px solid var(--border-color);
+        width: 100%;
+        height: 56px; /* ปรับความสูง */
+        padding: 0.5rem;
+        border-radius: 8px;
         cursor: pointer;
         display: flex;
+        flex-direction: column; /* จัดไอคอนและข้อความแนวตั้ง */
         align-items: center;
         justify-content: center;
         color: var(--secondary-color);
-        transition: background-color 0.2s, color 0.2s;
+        transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        font-size: 0.8em; /* ลดขนาดฟอนต์ */
+        font-weight: bold;
     }
     .sidebar-btn svg {
-        /* [MODIFIED] Made icons slightly larger */
-        width: 35px;
-        height: 35px;
-        stroke-width: 2;
+        width: 24px;
+        height: 24px;
+        margin-bottom: 4px; /* ระยะห่างระหว่างไอคอนกับข้อความ */
     }
     .sidebar-btn:hover {
-        background-color: var(--light-bg);
+        background-color: #e9ecef;
         color: var(--primary-color);
+        border-color: #b8c2cc;
     }
     .sidebar-btn.active {
         background-color: #e7f1ff;
         color: var(--primary-color);
+        border-color: var(--primary-color);
     }
-
     /* --- Main Content Columns --- */
     .search-column {
-        padding: var(--gap) 0.4rem var(--gap) var(--gap);
+        padding: var(--gap);
         height: 100vh;
         box-sizing: border-box;
         display: flex;
     }
     .cart-column {
-        padding: var(--gap) var(--gap) var(--gap) 0.4rem;
+        padding: var(--gap) var(--gap) var(--gap) 0;
         height: 100vh;
         box-sizing: border-box;
         display: flex;
@@ -312,18 +310,18 @@
     .delete-history-btn { background-color: var(--danger-color); padding: 0.25rem 0.6rem; font-size: 0.85em; }
     .edit-history-btn { background-color: var(--info-color); padding: 0.25rem 0.6rem; font-size: 0.85em; margin-right: 5px; }
 
-    #history-table-wrapper, #report-table-wrapper { flex-grow: 1; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; }
-    #history-table, #report-table { width: 100%; border-collapse: collapse; }
-    #history-table th, #history-table td, #report-table th, #report-table td {
+    #history-table-wrapper { flex-grow: 1; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; }
+    #history-table { width: 100%; border-collapse: collapse; }
+    #history-table th, #history-table td {
         border-bottom: 1px solid var(--border-color);
         padding: 0.75rem 1rem;
         text-align: left;
         vertical-align: middle;
         font-size: 0.9em;
     }
-    #history-table th, #report-table th { background-color: #f1f3f5; position: sticky; top: 0; z-index: 10; font-weight: bold; font-size: 0.95em; }
-    #history-table tr:nth-child(even), #report-table tr:nth-child(even) { background-color: var(--light-bg); }
-    #history-table tr:hover, #report-table tr:hover { background-color: #e9f5ff; }
+    #history-table th { background-color: #f1f3f5; position: sticky; top: 0; z-index: 10; font-weight: bold; font-size: 0.95em; }
+    #history-table tr:nth-child(even) { background-color: var(--light-bg); }
+    #history-table tr:hover { background-color: #e9f5ff; }
     #history-table tr.exported-row { background-color: #f1f8e9; opacity: 0.8; }
     #history-table tr.exported-row:hover { opacity: 1; }
     #history-table tr.exported-row td { color: #555; }
@@ -350,7 +348,7 @@
     .tab-button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); font-weight: bold; }
     .close-tab-btn { background: none; border: none; color: inherit; font-size: 1.2em; padding: 0 0 0 0.6rem; line-height: 1; opacity: 0.5; border-radius: 50%; }
     .close-tab-btn:hover { opacity: 1; background-color: rgba(0,0,0,0.1); }
-    #product-mgmt-modal .modal-content, #history-modal .modal-content, #settings-modal .modal-content, #report-modal .modal-content { max-width: 95vw; width: 1400px; height: 95vh; }
+    #product-mgmt-modal .modal-content, #history-modal .modal-content, #settings-modal .modal-content { max-width: 95vw; width: 1400px; height: 95vh; }
     .modal-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); }
     .modal-toolbar h2 { margin: 0; border: none; font-size: 1.4rem; }
     #product-list-container { flex-grow: 1; overflow-y: auto; }
@@ -381,16 +379,17 @@
     @media (max-width: 992px) {
         body { overflow: auto; height: auto; }
         .app-layout { display: block; }
-        #app-sidebar { width: 100%; flex-direction: row; justify-content: space-around; padding: 0.5rem 0; border-right: none; border-top: 1px solid var(--border-color); position: fixed; bottom: 0; left: 0; z-index: 100; height: 75px; }
-        .sidebar-btn { width: auto; flex-grow: 1; }
-        .sidebar-btn span { font-size: 0.8em; }
-        .sidebar-btn svg { width: 24px; height: 24px; }
-        .search-column, .cart-column { width: 100%; min-height: 450px; padding: var(--gap) var(--gap) 80px var(--gap); }
+        .search-column, .cart-column { width: 100%; min-height: 450px; padding: var(--gap); }
+        .cart-column { padding-top: 0; }
+        #app-sidebar {
+            /* On smaller screens, keep it as a grid but ensure it's not inside a fixed-height container */
+            margin-top: var(--gap);
+        }
         #product-editor-modal .form-content-area { grid-template-columns: 1fr; }
         .filter-section { grid-template-columns: 1fr; }
     }
     @media (max-width: 768px) {
-        .search-column, .cart-column { padding: 0.5rem 0.5rem 80px 0.5rem; }
+        .search-column, .cart-column { padding: 0.5rem; }
         .card { padding: 1rem; }
         h2, h3 { font-size: 1.25rem; }
         h3 { font-size: 1.1rem; }
@@ -407,145 +406,7 @@
         #product-list-pagination { flex-wrap: wrap; }
         .pagination-controls button { padding: 0.4rem 0.8rem; }
     }
-/* ============================================= */
-/* == [REDESIGN] Report Modal UI Enhancements == */
-/* ============================================= */
 
-/* ปรับ Layout หลักของ Modal ให้ยืดหยุ่น */
-#report-modal .modal-body {
-    display: flex;
-    flex-direction: column;
-    padding: 0; /* เอา padding เดิมออก */
-    background-color: #f8f9fa; /* เปลี่ยนสีพื้นหลัง modal */
-}
-
-#report-modal .card {
-    border: none;
-    box-shadow: none;
-    height: 100%;
-    padding: 1.5rem 2rem; /* เพิ่ม padding ให้โปร่งขึ้น */
-    background-color: transparent; /* ทำให้ card โปร่งใส */
-}
-
-/* หัวข้อหลัก */
-#report-modal h2 {
-    font-size: 1.8rem;
-    color: var(--dark-text);
-    border-bottom: none;
-    margin-bottom: 1.5rem;
-}
-
-/* ส่วน Filter ด้านบน */
-#report-modal .filter-section {
-    background-color: var(--white-color);
-    padding: 1.5rem;
-    border-radius: 10px;
-    box-shadow: var(--shadow);
-    margin-bottom: 1.5rem;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* ปรับ layout ให้ยืดหยุ่น */
-    gap: 1.2rem;
-}
-
-/* ส่วนสรุปยอดขาย (รูปแบบการ์ด) */
-#report-summary-section {
-    margin-bottom: 1.5rem;
-}
-
-#report-summary-grid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* ปรับให้การ์ดใหญ่ขึ้น */
-    gap: 1rem;
-}
-
-#report-summary-grid .summary-item {
-    background-color: var(--white-color);
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
-    padding: 1rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-#report-summary-grid .summary-item:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-hover);
-}
-#report-summary-grid .summary-item .label {
-    font-size: 0.9em;
-    font-weight: bold;
-}
-#report-summary-grid .summary-item .value {
-    font-size: 1.8em;
-    margin-top: 0.25rem;
-}
-
-
-/* ส่วนของตารางรายงาน */
-#report-table-wrapper {
-    border-radius: 10px;
-    background-color: var(--white-color);
-    box-shadow: var(--shadow);
-    border: none;
-}
-
-#report-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-/* ปรับสไตล์หัวตารางและข้อมูลให้สวยงาม */
-#report-table th,
-#report-table td {
-    padding: 1rem 1.25rem; /* เพิ่มระยะห่างให้สบายตา */
-    border-bottom: 1px solid var(--border-color);
-    text-align: left; /* 기본 정렬을 왼쪽으로 설정 */
-    vertical-align: middle;
-}
-
-#report-table th {
-    font-size: 1em;
-    background-color: #f1f3f5;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-
-/* ทำให้แถวข้อมูลดูง่ายขึ้น */
-#report-table tbody tr:nth-child(even) {
-    background-color: #f8f9fa;
-}
-
-#report-table tbody tr:hover {
-    background-color: #e9ecef;
-}
-
-/* ---
-    [CRITICAL FIX] จัดตำแหน่ง Text-Align ของหัวตารางและข้อมูลให้ตรงกัน
-    --- */
-
-/* คอลัมน์ข้อความ (ชิดซ้าย) */
-#report-table th:nth-child(1),
-#report-table td:nth-child(1) {
-    text-align: left;
-}
-
-/* คอลัมน์ตัวเลข (ชิดขวา) */
-#report-table th:nth-child(2),
-#report-table td:nth-child(2),
-#report-table th:nth-child(3),
-#report-table td:nth-child(3),
-#report-table th:nth-child(4),
-#report-table td:nth-child(4),
-#report-table th:nth-child(5),
-#report-table td:nth-child(5) {
-    text-align: right;
-}
-
-#report-table td:nth-child(1) strong {
-    color: var(--primary-color);
-}
-
-/* ปรับสีของกำไรให้ชัดเจน */
-#report-table td:last-child {
-    font-weight: bold;
-}
 /* [NEW LAYOUT] CSS สำหรับจัดระเบียบ Filter ในหน้า History */
 #history-filter-section {
     display: grid;
@@ -567,21 +428,6 @@
 <body>
 
 <div class="app-layout">
-    <aside id="app-sidebar">
-        <button class="sidebar-btn active" data-view="pos" title="หน้าขาย (POS)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-        </button>
-        <button class="sidebar-btn" data-view="history" title="ประวัติการขาย">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"></path><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-        </button>
-        <button class="sidebar-btn" data-view="settings" title="จัดการสินค้าและตั้งค่า">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-        </button>
-        <button class="sidebar-btn" data-view="report" title="รายงานการขาย">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-        </button>
-    </aside>
-
     <div class="search-column">
         <div class="card">
             <h2>
@@ -603,6 +449,21 @@
                 </div>
             </div>
             <div id="search-results"></div>
+
+            <aside id="app-sidebar">
+                <button class="sidebar-btn active" data-view="pos">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    <span>หน้าขาย</span>
+                </button>
+                <button class="sidebar-btn" data-view="history">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"></path><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                    <span>ประวัติ</span>
+                </button>
+                <button class="sidebar-btn" data-view="settings">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                    <span>ตั้งค่า</span>
+                </button>
+            </aside>
         </div>
     </div>
     <div class="cart-column">
@@ -710,63 +571,6 @@
     </div>
 </div>
 
-<div id="report-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>รายงานการขาย</h3>
-        </div>
-        <div class="modal-body" style="display: flex; flex-direction: column;">
-            <section class="card" style="height: 100%; box-shadow: none; border: none; padding: 0;">
-                <div class="filter-section">
-                    <div class="filter-group">
-                        <label>ช่วงวันที่</label>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <input type="date" id="report-start-date">
-                            <input type="date" id="report-end-date">
-                        </div>
-                    </div>
-                    <div class="filter-group">
-                        <label for="report-product-search">ค้นหาสินค้าในรายงาน</label>
-                        <div class="input-with-icon">
-                            <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
-                            <input type="text" id="report-product-search" placeholder="พิมพ์ชื่อสินค้า...">
-                        </div>
-                    </div>
-                    <div class="filter-group">
-                        <label>&nbsp;</label>
-                        <div style="display: flex; gap: 0.5rem;">
-                             <button type="button" id="report-today-btn" style="background-color: var(--info-color);">วันนี้</button>
-                             <button type="button" id="report-week-btn">สัปดาห์นี้</button>
-                             <button type="button" id="report-month-btn">เดือนนี้</button>
-                        </div>
-                    </div>
-                    <div class="filter-group">
-                         <label>&nbsp;</label>
-                         <button type="button" id="generate-report-btn">สร้างรายงาน</button>
-                    </div>
-                </div>
-                <div id="report-summary-section" style="margin-bottom: 1.5rem;">
-                    <div class="summary-grid" id="report-summary-grid">
-                    </div>
-                </div>
-                <div class="button-group" style="justify-content: flex-start; margin-bottom: 1rem; margin-top:0;">
-                    <button type="button" id="export-report-excel-btn">Export to Excel</button>
-                </div>
-                <div id="report-table-wrapper">
-                    <table id="report-table">
-                        <thead><tr><th>สินค้า</th><th>จำนวนที่ขาย (หน่วยเล็ก)</th><th>ยอดขายรวม</th><th>ต้นทุนรวม</th><th>กำไรรวม</th></tr></thead>
-                        <tbody id="report-body"></tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="close-main-modal-btn" style="background-color: var(--secondary-color);">ปิด</button>
-        </div>
-    </div>
-</div>
-
-
 <div id="payment-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"><h3>ชำระเงิน</h3></div> <div class="modal-body"> <div class="payment-modal-body"> <div class="payment-row"><span class="payment-label">ยอดสุทธิ</span><span class="payment-amount" id="payment-total-final">0.00</span></div> <div class="payment-row"><label for="cash-received-input" class="payment-label">รับเงินมา</label><input type="number" id="cash-received-input" step="any" placeholder="0.00"></div> <div class="payment-row"><span class="payment-label">เงินทอน</span><span class="payment-amount" id="payment-change">0.00</span></div> </div> </div> <div class="modal-footer"> <div class="button-group"> <button type="button" id="cancel-payment-btn" style="background-color:var(--secondary-color)">ยกเลิก (ESC)</button> <button type="button" id="confirm-sale-btn" class="finish-sale">ยืนยันการขาย (Enter)</button> </div> </div> </div> </div>
 <div id="delete-confirm-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"><h3 style="color:var(--danger-color)">ยืนยันการลบ</h3></div> <div class="modal-body"><p id="delete-confirm-text"></p></div> <div class="modal-footer"> <div class="button-group"> <button type="button" id="cancel-delete-btn" style="background-color:var(--secondary-color)">ยกเลิก</button> <button type="button" id="confirm-delete-btn" class="clear-cart">ยืนยันการลบ</button> </div> </div> </div> </div>
 <div id="clear-options-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"><h3>เลือกวิธีการล้างประวัติ</h3></div> <div class="modal-body"> <p>คุณต้องการล้างประวัติการขายแบบใด?</p> <div class="button-group" style="flex-direction: column; gap: 1rem;"> <button type="button" id="clear-local-btn" class="clear-cart" style="background-color: var(--info-color);">ล้างเฉพาะหน้าเว็บนี้</button> <button type="button" id="clear-db-btn" class="clear-cart">ล้างจากฐานข้อมูล (ถาวร)</button> </div> </div> <div class="modal-footer"> <button type="button" id="cancel-clear-btn" style="background-color: var(--secondary-color);">ยกเลิก</button> </div> </div> </div>
@@ -822,16 +626,16 @@
             } else {
                  console.log("No user is signed in. Attempting authentication...");
                  try {
-                        if (initialAuthToken) {
-                            await signInWithCustomToken(auth, initialAuthToken);
-                            console.log("Signed in with custom token.");
-                        } else {
-                            await signInAnonymously(auth);
-                            console.log("Signed in anonymously.");
-                        }
+                         if (initialAuthToken) {
+                             await signInWithCustomToken(auth, initialAuthToken);
+                             console.log("Signed in with custom token.");
+                         } else {
+                             await signInAnonymously(auth);
+                             console.log("Signed in anonymously.");
+                         }
                  } catch (authError) {
-                        console.error("Firebase Authentication Failed:", authError);
-                        window.dispatchEvent(new CustomEvent('firebase-failed', { detail: authError }));
+                         console.error("Firebase Authentication Failed:", authError);
+                         window.dispatchEvent(new CustomEvent('firebase-failed', { detail: authError }));
                  }
             }
         });
@@ -870,8 +674,7 @@ const POS_APP = {
         _costCalculationListener: null,
         productListPage: 1,
         productsPerPage: 10,
-        currentReportData: [],
-        currentReportSalesDocs: [],
+        // [REMOVED] Report state variables
         // [NEW] State สำหรับตรวจจับการสแกน
         lastInputTimestamp: 0,
         isScanning: false,
@@ -935,15 +738,6 @@ const POS_APP = {
         document.getElementById('settings-modal').style.display = 'none';
         this.setActiveOverlay(null);
     },
-    showReportModal() {
-        document.getElementById('report-modal').style.display = 'flex';
-        this.setActiveOverlay('report');
-        this.setReportDateRange('today');
-    },
-    hideReportModal() {
-        document.getElementById('report-modal').style.display = 'none';
-        this.setActiveOverlay(null);
-    },
     
 setupEventListeners() {
         // --- Sidebar Navigation ---
@@ -955,14 +749,12 @@ setupEventListeners() {
             if (view === 'pos') {
                 this.hideHistoryModal();
                 this.hideSettingsModal();
-                this.hideReportModal();
             } else if (view === 'history') {
                 this.showHistoryModal();
             } else if (view === 'settings') {
                 this.showSettingsModal();
-            } else if (view === 'report') {
-                this.showReportModal();
             }
+            // [REMOVED] Report button logic
         });
 
         // --- Main Modal Close Buttons ---
@@ -970,37 +762,11 @@ setupEventListeners() {
             btn.addEventListener('click', () => {
                 this.hideHistoryModal();
                 this.hideSettingsModal();
-                this.hideReportModal();
+                // [REMOVED] Report modal hide logic
             });
         });
 
-        // --- Report Modal Listeners ---
-        document.getElementById('generate-report-btn').addEventListener('click', () => this.generateSalesReport());
-        document.getElementById('report-today-btn').addEventListener('click', () => this.setReportDateRange('today'));
-        document.getElementById('report-week-btn').addEventListener('click', () => this.setReportDateRange('week'));
-        document.getElementById('report-month-btn').addEventListener('click', () => this.setReportDateRange('month'));
-        document.getElementById('export-report-excel-btn').addEventListener('click', () => this.exportReportToExcel());
-
-        const reportSearchInput = document.getElementById('report-product-search');
-        reportSearchInput.addEventListener('keyup', (e) => {
-            const query = e.target.value.trim();
-            if (query === '111111') {
-                this.state.isRestrictedMode = false;
-                e.target.value = '';
-                this.showInfoModal("เข้าสู่โหมดผู้ดูแล", "เปิดใช้งานฟังก์ชันการดูข้อมูลสรุปในรายงานแล้ว");
-                this.toggleUIVisibility();
-                this.updateReportView();
-                return;
-            } else if (query === '0000000000') {
-                this.state.isRestrictedMode = true;
-                e.target.value = '';
-                this.showInfoModal("ออกจากโหมดผู้ดูแล", "ปิดฟังก์ชันการดูข้อมูลสรุปในรายงาน");
-                this.toggleUIVisibility();
-                this.updateReportView();
-                return;
-            }
-            this.updateReportView();
-        });
+        // [REMOVED] Report Modal Listeners
 
         // --- Existing Event Listeners ---
         document.getElementById('import-from-sheet-btn').addEventListener('click', () => this.importFromGoogleSheet(false));
@@ -1081,228 +847,9 @@ setupEventListeners() {
         });
     },
     // =================================================================
-    // == REPORTING LOGIC
+    // == [REMOVED] REPORTING LOGIC
     // =================================================================
-    setReportDateRange(period) {
-        const startDateInput = document.getElementById('report-start-date');
-        const endDateInput = document.getElementById('report-end-date');
-        const today = new Date();
-        let startDate, endDate = new Date(today);
-
-        switch (period) {
-            case 'today':
-                startDate = new Date(today);
-                break;
-            case 'week':
-                startDate = new Date(today);
-                const dayOfWeek = today.getDay();
-                const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-                startDate.setDate(diff);
-                break;
-            case 'month':
-                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-                break;
-        }
-
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setHours(23, 59, 59, 999);
-        const toInputFormat = (date) => date.toISOString().split('T')[0];
-        startDateInput.value = toInputFormat(startDate);
-        endDateInput.value = toInputFormat(endDate);
-        this.generateSalesReport();
-    },
-
-    async generateSalesReport() {
-        const startDateInput = document.getElementById('report-start-date').value;
-        const endDateInput = document.getElementById('report-end-date').value;
-        const reportBody = document.getElementById('report-body');
-        const summaryGrid = document.getElementById('report-summary-grid');
-
-        if (!startDateInput || !endDateInput) {
-            this.showInfoModal("ข้อมูลไม่ครบถ้วน", "กรุณาเลือกช่วงวันที่ที่ต้องการสร้างรายงาน", true);
-            return;
-        }
-
-        reportBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">กำลังสร้างรายงาน...</td></tr>';
-        summaryGrid.innerHTML = '';
-        this.state.currentReportData = [];
-
-        const startDateTime = new Date(startDateInput);
-        startDateTime.setHours(0, 0, 0, 0);
-        const endDateTime = new Date(endDateInput);
-        endDateTime.setHours(23, 59, 59, 999);
-
-        try {
-            const { db, api } = window.firebaseServices;
-            const historyCollectionRef = this.getSalesHistoryCollectionRef();
-            const q = api.query(historyCollectionRef, api.where("timestamp", ">=", startDateTime.toISOString()), api.where("timestamp", "<=", endDateTime.toISOString()));
-            const querySnapshot = await api.getDocs(q);
-
-            const salesDocs = [];
-            querySnapshot.forEach(doc => salesDocs.push(doc.data()));
-
-            if (salesDocs.length === 0) {
-                reportBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">ไม่พบข้อมูลการขายในช่วงวันที่ที่เลือก</td></tr>';
-                return;
-            }
-
-            const aggregatedData = {};
-            salesDocs.forEach(sale => {
-                sale.items.forEach(item => {
-                    const key = `${item.productName}_${item.baseUnit}`;
-                    if (!aggregatedData[key]) {
-                        aggregatedData[key] = {
-                            productName: item.productName,
-                            baseUnit: item.baseUnit,
-                            totalQuantity: 0,
-                            totalRevenue: 0,
-                            totalCost: 0,
-                        };
-                    }
-                    const itemRevenue = item.price * item.quantity;
-                    const itemCost = item.cost * item.quantity;
-                    const quantityInBaseUnits = item.quantity * (item.conversionFactor || 1);
-
-                    aggregatedData[key].totalQuantity += quantityInBaseUnits;
-                    aggregatedData[key].totalRevenue += itemRevenue;
-                    aggregatedData[key].totalCost += itemCost;
-                });
-            });
-
-            const reportArray = Object.values(aggregatedData).map(item => ({
-                ...item,
-                totalProfit: item.totalRevenue - item.totalCost,
-            }));
-
-            reportArray.sort((a, b) => b.totalProfit - a.totalProfit);
-            this.state.currentReportData = reportArray;
-            this.renderReport(reportArray, salesDocs);
-
-        } catch (error) {
-            console.error("Error generating sales report:", error);
-            this.showInfoModal("เกิดข้อผิดพลาด", `ไม่สามารถสร้างรายงานได้: ${error.message}`, true);
-            reportBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 2rem; color: var(--danger-color);">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>`;
-        }
-    },
-
-    renderReport(reportArray, salesDocs) {
-        this.state.currentReportData = reportArray;
-        this.state.currentReportSalesDocs = salesDocs;
-        const searchInput = document.getElementById('report-product-search');
-        if (searchInput) {
-            searchInput.value = '';
-        }
-        this.updateReportView();
-    },
-
-    updateReportView() {
-        const reportArray = this.state.currentReportData;
-        const salesDocs = this.state.currentReportSalesDocs;
-        const reportTable = document.getElementById('report-table');
-        const reportHead = reportTable.querySelector('thead');
-        const reportBody = document.getElementById('report-body');
-        const summaryGrid = document.getElementById('report-summary-grid');
-        const summarySection = document.getElementById('report-summary-section');
-        
-        reportBody.innerHTML = '';
-        summaryGrid.innerHTML = '';
-
-        const isRestricted = this.state.isRestrictedMode;
-
-        // Update table header based on mode
-        if (isRestricted) {
-            reportHead.innerHTML = '<tr><th>สินค้า</th><th>จำนวนที่ขาย (หน่วยเล็ก)</th><th>ยอดขายรวม</th><th>ต้นทุนรวม</th></tr>';
-        } else {
-            reportHead.innerHTML = '<tr><th>สินค้า</th><th>จำนวนที่ขาย (หน่วยเล็ก)</th><th>ยอดขายรวม</th><th>ต้นทุนรวม</th><th>กำไรรวม</th></tr>';
-        }
-        
-        const colCount = isRestricted ? 4 : 5;
-
-        if (!reportArray || !salesDocs) {
-            reportBody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center; padding: 2rem;">ไม่มีข้อมูลรายงานให้แสดงผล</td></tr>`;
-            return;
-        }
-
-        if (isRestricted) {
-            summarySection.style.display = 'none';
-        } else {
-            summarySection.style.display = 'block';
-            const totalRevenue = salesDocs.reduce((sum, sale) => sum + sale.total, 0);
-            const totalDiscount = salesDocs.reduce((sum, sale) => sum + sale.discount, 0);
-            const totalCost = reportArray.reduce((sum, item) => sum + item.totalCost, 0);
-            const totalProfit = totalRevenue - totalCost;
-            const totalBills = salesDocs.length;
-            const totalItemsSold = reportArray.reduce((sum, item) => sum + item.totalQuantity, 0);
-
-            const summaryItems = [
-                { label: 'ยอดขายสุทธิ', value: totalRevenue.toFixed(2), color: 'var(--success-color)' },
-                { label: 'กำไรรวม', value: totalProfit.toFixed(2), color: '#00aaff' },
-                { label: 'ต้นทุนรวม', value: totalCost.toFixed(2), color: 'var(--secondary-color)' },
-                { label: 'ส่วนลดรวม', value: totalDiscount.toFixed(2), color: 'var(--warning-color)' },
-                { label: 'จำนวนบิล', value: totalBills },
-                { label: 'จำนวนสินค้าที่ขาย (ชิ้น)', value: totalItemsSold.toFixed(0) },
-            ];
-
-            summaryGrid.innerHTML = summaryItems.map(item => `
-                <div class="summary-item">
-                    <div class="label">${item.label}</div>
-                    <div class="value" style="${item.color ? `color: ${item.color};` : ''}">${item.value}</div>
-                </div>
-            `).join('');
-        }
-        
-        const searchTerm = document.getElementById('report-product-search').value.toLowerCase();
-        const filteredReportArray = reportArray.filter(item => 
-            item.productName.toLowerCase().includes(searchTerm)
-        );
-
-        if (filteredReportArray.length > 0) {
-            filteredReportArray.forEach(item => {
-                const row = reportBody.insertRow();
-                let rowHTML = `
-                    <td><strong>${item.productName}</strong></td>
-                    <td>${item.totalQuantity.toFixed(2)} ${item.baseUnit}</td>
-                    <td>${item.totalRevenue.toFixed(2)}</td>
-                    <td>${item.totalCost.toFixed(2)}</td>
-                `;
-                if (!isRestricted) {
-                    rowHTML += `<td style="font-weight:bold; color: ${item.totalProfit >= 0 ? 'var(--success-color)' : 'var(--danger-color)'};">${item.totalProfit.toFixed(2)}</td>`;
-                }
-                row.innerHTML = rowHTML;
-            });
-        } else {
-             if (searchTerm && reportArray.length > 0) {
-                 reportBody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center; padding: 2rem;">ไม่พบสินค้าที่ตรงกับคำค้นหาในรายงานนี้</td></tr>`;
-             } else {
-                 reportBody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center; padding: 2rem;">ไม่พบข้อมูลการขายในช่วงวันที่ที่เลือก</td></tr>`;
-             }
-        }
-    },
-
-    exportReportToExcel() {
-        if (this.state.currentReportData.length === 0) {
-            this.showInfoModal("ไม่มีข้อมูล", "ไม่มีข้อมูลสำหรับส่งออก กรุณาสร้างรายงานก่อน", false);
-            return;
-        }
-
-        const dataToExport = this.state.currentReportData.map(item => ({
-            'สินค้า': item.productName,
-            'จำนวนที่ขาย (หน่วยเล็กที่สุด)': item.totalQuantity,
-            'หน่วย': item.baseUnit,
-            'ยอดขายรวม (บาท)': item.totalRevenue,
-            'ต้นทุนรวม (บาท)': item.totalCost,
-            'กำไรรวม (บาท)': item.totalProfit,
-        }));
-
-        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'รายงานการขาย');
-        worksheet['!cols'] = [ { wch: 40 }, { wch: 25 }, { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 20 } ];
-        const startDate = document.getElementById('report-start-date').value;
-        const endDate = document.getElementById('report-end-date').value;
-        XLSX.writeFile(workbook, `SalesReport_${startDate}_to_${endDate}.xlsx`);
-    },
-
+    
     // =================================================================
     // == DATA & CORE LOGIC
     // =================================================================
@@ -2138,7 +1685,7 @@ setupEventListeners() {
             if(this.state.activeOverlay) {
                 this.hideHistoryModal();
                 this.hideSettingsModal();
-                this.hideReportModal();
+                // [REMOVED] report modal hide logic
             } else if (document.getElementById('payment-modal').style.display === 'flex') { e.preventDefault(); this.hidePaymentModal(); } 
             else if (document.getElementById('delete-confirm-modal').style.display === 'flex') { e.preventDefault(); this.hideDeleteConfirmModal(); } 
             else if (document.getElementById('clear-options-modal').style.display === 'flex') { e.preventDefault(); this.hideClearOptionsModal(); } 
