@@ -847,7 +847,7 @@ setupEventListeners() {
         document.getElementById('manage-products-btn').addEventListener('click', this.showProductMgmtModal.bind(this));
         document.getElementById('close-product-mgmt-btn').addEventListener('click', this.hideProductMgmtModal.bind(this));
         document.getElementById('add-new-product-btn').addEventListener('click', () => this.showProductEditorModal());
-        document.getElementById('product-editor-form').addEventListener('submit', this.handleSaveProduct.bind(this));
+        document.getElementById('save-product-btn').addEventListener('click', this.handleSaveProduct.bind(this));
         document.getElementById('cancel-product-editor-btn').addEventListener('click', this.hideProductEditorModal.bind(this));
         document.getElementById('add-pricing-unit-btn').addEventListener('click', this.handleAddPricingUnit.bind(this));
         document.getElementById('product-list-container').addEventListener('click', this.handleProductListActions.bind(this));
