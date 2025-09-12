@@ -493,7 +493,6 @@
         <div class="card">
             <div class="cart-tabs-container">
                 <div id="cart-tabs"></div>
-                <!-- [MOVED] Sidebar is now here -->
                 <aside id="app-sidebar">
                     <button class="sidebar-btn" data-view="history">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"></path><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
@@ -1115,29 +1114,42 @@ setupEventListeners() {
             this.showInfoModal("ข้อผิดพลาด", "ไม่สามารถโหลดรายการสินค้าจากฐานข้อมูลได้", true); 
         }); 
     },
-    getPriceForQuantity(pricingUnit, quantity) {
+    // [REPLACED] Old getPriceForQuantity function
+    calculateItemTotal(pricingUnit, quantity) {
         if (!pricingUnit) return 0;
-        let applicablePrice = -1;
-        if (pricingUnit.priceTiers && pricingUnit.priceTiers.length > 0) {
-             const sortedTiers = [...pricingUnit.priceTiers].sort((a, b) => b.quantity - a.quantity);
-             for (const tier of sortedTiers) {
-                 if (quantity >= tier.quantity) {
-                     applicablePrice = tier.price;
-                     break;
-                 }
-             }
+        
+        // Fallback to simple pricing if no tiers are set up
+        if (!pricingUnit.priceTiers || pricingUnit.priceTiers.length === 0) {
+            return (pricingUnit.defaultPrice || 0) * quantity;
         }
-        if (applicablePrice < 0) {
-            return pricingUnit.defaultPrice || 0;
+
+        // Sort tiers from the largest quantity to the smallest
+        const sortedTiers = [...pricingUnit.priceTiers].sort((a, b) => b.quantity - a.quantity);
+        
+        let totalPrice = 0;
+        let remainingQuantity = quantity;
+
+        // Loop through each tier to break down the quantity into bundles
+        for (const tier of sortedTiers) {
+            // Skip invalid tiers (quantity must be positive)
+            if (tier.quantity <= 0) continue; 
+            
+            if (remainingQuantity >= tier.quantity) {
+                const numBundles = Math.floor(remainingQuantity / tier.quantity);
+                // Add the total price of the bundles
+                totalPrice += numBundles * tier.price;
+                // Update the remaining quantity
+                remainingQuantity %= tier.quantity;
+            }
         }
-        return applicablePrice;
+        return totalPrice;
     },
     prepareSearchableProducts() {
         const flatList = [];
         this.state.productsFromFirestore.forEach(product => {
             if (product.pricingUnits && Array.isArray(product.pricingUnits)) {
                 product.pricingUnits.forEach(unit => {
-                    const basePrice = this.getPriceForQuantity(unit, 1);
+                    const basePrice = this.calculateItemTotal(unit, 1);
                     const cartItemId = unit.barcode || `${product.id}-${unit.unitName}`;
                     const searchableItem = {
                         productId: product.id,
@@ -1336,7 +1348,7 @@ setupEventListeners() {
              return;
         }
         const headerHTML = `<div class="product-list-row product-list-header"><span>ชื่อสินค้า (รหัส)</span><span>สต็อก</span><span>หน่วยราคา</span><span>การกระทำ</span></div>`;
-        const rowsHTML = paginatedItems.map(p => `<div class="product-list-row"><div><strong>${p.productName}</strong><div class="sub-text">${p.productCode || ''}</div><div class="sub-text">${p.category || 'ไม่มีหมวดหมู่'}</div></div><div class="sub-text">${p.stockInBaseUnits} ${p.baseUnit}</div><div class="sub-text">${(p.pricingUnits || []).map(u => `${u.unitName} (${this.getPriceForQuantity(u, 1)}฿)`).join(', ')}</div><div><button type="button" class="edit-history-btn" data-action="edit" data-id="${p.id}">แก้ไข</button><button type="button" class="delete-history-btn" data-action="delete" data-id="${p.id}">ลบ</button></div></div>`).join('');
+        const rowsHTML = paginatedItems.map(p => `<div class="product-list-row"><div><strong>${p.productName}</strong><div class="sub-text">${p.productCode || ''}</div><div class="sub-text">${p.category || 'ไม่มีหมวดหมู่'}</div></div><div class="sub-text">${p.stockInBaseUnits} ${p.baseUnit}</div><div class="sub-text">${(p.pricingUnits || []).map(u => `${u.unitName} (${this.calculateItemTotal(u, 1)}฿)`).join(', ')}</div><div><button type="button" class="edit-history-btn" data-action="edit" data-id="${p.id}">แก้ไข</button><button type="button" class="delete-history-btn" data-action="delete" data-id="${p.id}">ลบ</button></div></div>`).join('');
         container.innerHTML = headerHTML + rowsHTML;
         this.renderPaginationControls(totalItems);
     },
@@ -1362,7 +1374,7 @@ setupEventListeners() {
         card.className = 'pricing-unit-card';
         const priceTiers = (unitData && unitData.priceTiers && unitData.priceTiers.length > 0) ? unitData.priceTiers : [{ quantity: 1, price: 0 }];
         const priceTiersHTML = priceTiers.map(tier => this.createPriceTierRowHTML(tier.quantity, tier.price)).join('');
-        card.innerHTML = `<div class="pricing-unit-header"><h4>หน่วยขาย</h4><button type="button" class="delete-item-btn" data-action="remove-unit" title="ลบหน่วยนี้"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></div><div class="pricing-unit-grid"><div class="form-group"><label>ชื่อหน่วย</label><input type="text" data-field="unitName" placeholder="เช่น ชิ้น, แพ็ค" value="${unitData?.unitName || ''}" required></div><div class="form-group"><label>บาร์โค้ด (ถ้ามี)</label><input type="text" data-field="barcode" value="${unitData?.barcode || ''}"></div><div class="form-group"><label>ต้นทุน/หน่วยนี้</label><input type="number" step="any" data-field="cost" value="${unitData?.cost || 0}"></div><div class="form-group"><label>ตัวคูณ (เทียบกับหน่วยเล็ก)</label><input type="number" step="1" data-field="conversionFactor" placeholder="1 แพ็ค = 6 ชิ้น (ใส่ 6)" value="${unitData?.conversionFactor || 1}" required></div></div><div class="price-tiers-container"><label style="font-weight:bold; font-size: 0.9em;">ราคาขายตามจำนวน</label><div class="price-tier-header"><div>ขั้นต่ำ (ชิ้น)</div><div>ราคา/หน่วย</div><div></div></div><div class="price-tiers-list">${priceTiersHTML}</div><button type="button" class="add-tier-btn" data-action="add-tier">+ เพิ่มระดับราคา</button></div>`;
+        card.innerHTML = `<div class="pricing-unit-header"><h4>หน่วยขาย</h4><button type="button" class="delete-item-btn" data-action="remove-unit" title="ลบหน่วยนี้"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></div><div class="pricing-unit-grid"><div class="form-group"><label>ชื่อหน่วย</label><input type="text" data-field="unitName" placeholder="เช่น ชิ้น, แพ็ค" value="${unitData?.unitName || ''}" required></div><div class="form-group"><label>บาร์โค้ด (ถ้ามี)</label><input type="text" data-field="barcode" value="${unitData?.barcode || ''}"></div><div class="form-group"><label>ต้นทุน/หน่วยนี้</label><input type="number" step="any" data-field="cost" value="${unitData?.cost || 0}"></div><div class="form-group"><label>ตัวคูณ (เทียบกับหน่วยเล็ก)</label><input type="number" step="1" data-field="conversionFactor" placeholder="1 แพ็ค = 6 ชิ้น (ใส่ 6)" value="${unitData?.conversionFactor || 1}" required></div></div><div class="price-tiers-container"><label style="font-weight:bold; font-size: 0.9em;">ราคาขายตามจำนวน</label><div class="price-tier-header"><div>ซื้อครบ (ชิ้น)</div><div>ราคารวม (บาท)</div><div></div></div><div class="price-tiers-list">${priceTiersHTML}</div><button type="button" class="add-tier-btn" data-action="add-tier">+ เพิ่มระดับราคา</button></div>`;
         container.appendChild(card);
     },
     createPriceTierRowHTML(quantity = 1, price = 0) {
@@ -1544,9 +1556,20 @@ setupEventListeners() {
         let subtotal = 0;
         cart.forEach((item, index) => {
             const { productUnit, quantity, priceOverride } = item;
-            const currentPrice = typeof priceOverride === 'number' ? priceOverride : this.getPriceForQuantity(productUnit.pricingUnit, quantity);
-            const totalForItem = currentPrice * quantity;
+            let totalForItem;
+            let pricePerUnit;
+
+            if (typeof priceOverride === 'number') {
+                // If a price has been manually overridden in the cart, use it
+                pricePerUnit = priceOverride;
+                totalForItem = pricePerUnit * quantity;
+            } else {
+                // Otherwise, use the new bundling logic to calculate the total
+                totalForItem = this.calculateItemTotal(productUnit.pricingUnit, quantity);
+                pricePerUnit = quantity > 0 ? totalForItem / quantity : 0;
+            }
             subtotal += totalForItem;
+
             const li = document.createElement('li');
             if (quantity > 1) {
                 li.classList.add('highlight-quantity');
@@ -1556,7 +1579,7 @@ setupEventListeners() {
             if (!this.state.isRestrictedMode) {
                 itemInfoHTML += ` <span class="sub-text">(คงเหลือ: ${stockInThisUnit.toFixed(2)} ${productUnit.pricingUnit.unitName})(ต้นทุน: ${(productUnit.pricingUnit.cost || 0).toFixed(2)})</span>`;
             }
-            li.innerHTML = `<div class="col-seq">${index + 1}</div><div class="col-name">${itemInfoHTML}</div><div class="col-qty"><input type="number" class="item-input" value="${quantity}" onchange="POS_APP.editItemQuantity(${index}, this.value)" onfocus="this.select()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('discount-input').focus(); document.getElementById('discount-input').select(); }"></div><div class="col-price"><input type="text" class="item-input" value="${currentPrice.toFixed(2)}" disabled></div><div class="col-total"><input type="text" class="item-input" value="${totalForItem.toFixed(2)}" onchange="POS_APP.editItemTotal(${index}, this.value)" onfocus="this.select()"></div><div class="col-delete"><button type="button" class="delete-item-btn" onclick="POS_APP.deleteItemFromCart(${index})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></div>`;
+            li.innerHTML = `<div class="col-seq">${index + 1}</div><div class="col-name">${itemInfoHTML}</div><div class="col-qty"><input type="number" class="item-input" value="${quantity}" onchange="POS_APP.editItemQuantity(${index}, this.value)" onfocus="this.select()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('discount-input').focus(); document.getElementById('discount-input').select(); }"></div><div class="col-price"><input type="text" class="item-input" value="${pricePerUnit.toFixed(2)}" disabled></div><div class="col-total"><input type="text" class="item-input" value="${totalForItem.toFixed(2)}" onchange="POS_APP.editItemTotal(${index}, this.value)" onfocus="this.select()"></div><div class="col-delete"><button type="button" class="delete-item-btn" onclick="POS_APP.deleteItemFromCart(${index})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></div>`;
             cartItemsElement.appendChild(li);
         });
         const total = subtotal - (discount || 0);
@@ -1823,8 +1846,10 @@ setupEventListeners() {
         if (!tabData) return;
         const { cart, discount } = tabData;
         const subtotal = cart.reduce((sum, item) => {
-            const price = typeof item.priceOverride === 'number' ? item.priceOverride : this.getPriceForQuantity(item.productUnit.pricingUnit, item.quantity);
-            return sum + (price * item.quantity);
+            if (typeof item.priceOverride === 'number') {
+                return sum + (item.priceOverride * item.quantity);
+            }
+            return sum + this.calculateItemTotal(item.productUnit.pricingUnit, item.quantity);
         }, 0);
         const finalTotal = subtotal - discount;
         const cashReceived = parseFloat(document.getElementById('cash-received-input').value) || 0;
@@ -1837,7 +1862,9 @@ setupEventListeners() {
             const conversionFactor = item.productUnit?.pricingUnit?.conversionFactor || 1;
             const costPerSellingUnit = item.productUnit?.pricingUnit?.cost || 0;
             const costPerBaseUnit = conversionFactor > 0 ? costPerSellingUnit / conversionFactor : 0;
-            const pricePerUnit = typeof item.priceOverride === 'number' ? item.priceOverride : this.getPriceForQuantity(item.productUnit.pricingUnit, item.quantity);
+            const pricePerUnit = typeof item.priceOverride === 'number' 
+                ? item.priceOverride 
+                : this.calculateItemTotal(item.productUnit.pricingUnit, item.quantity) / item.quantity;
             return {
                 cartItemId: item.cartItemId, name: item.productUnit.display, unit: item.productUnit.pricingUnit.unitName,
                 quantity: item.quantity, price: pricePerUnit,
@@ -1900,7 +1927,7 @@ setupEventListeners() {
             const fullProductUnit = this.state.searchableProductUnits.find(p => p.cartItemId === item.cartItemId);
             if (fullProductUnit) {
                 const cartItem = { cartItemId: item.cartItemId, productUnit: fullProductUnit, quantity: item.quantity };
-                const originalPrice = this.getPriceForQuantity(fullProductUnit.pricingUnit, item.quantity);
+                const originalPrice = this.calculateItemTotal(fullProductUnit.pricingUnit, item.quantity) / item.quantity;
                 if (Math.abs(item.price - originalPrice) > 0.001) {
                     cartItem.priceOverride = item.price;
                 }
