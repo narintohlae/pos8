@@ -333,7 +333,10 @@
     button.finish-sale { background-color: var(--success-color); border-color: var(--success-color); }
     button.clear-cart { background-color: var(--danger-color); border-color: var(--danger-color); }
     .delete-history-btn { background-color: var(--danger-color); padding: 0.25rem 0.6rem; font-size: 0.85em; }
-    .edit-history-btn { background-color: var(--info-color); padding: 0.25rem 0.6rem; font-size: 0.85em; margin-right: 5px; }
+    .edit-history-btn { background-color: var(--info-color); padding: 0.25rem 0.6rem; font-size: 0.85em; }
+    /* [NEW] Print button style */
+    .print-history-btn { background-color: var(--secondary-color); padding: 0.25rem 0.6rem; font-size: 0.85em; margin-right: 5px; }
+
 
     #history-table-wrapper { flex-grow: 1; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; }
     #history-table { width: 100%; border-collapse: collapse; }
@@ -593,6 +596,10 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
                         นำเข้า/อัปเดตจาก Google Sheet
                     </button>
+                    <button type="button" id="receipt-settings-btn" style="background-color: var(--secondary-color);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        ตั้งค่าใบเสร็จ
+                    </button>
                 </div>
                 <div style="margin-top: 1rem; display: flex; align-items: center;">
                     <input type="checkbox" id="auto-import-toggle" style="width: auto; margin-right: 0.5rem;" checked>
@@ -602,6 +609,38 @@
         </div>
         <div class="modal-footer">
             <button type="button" class="close-main-modal-btn" style="background-color: var(--secondary-color);">ปิด</button>
+        </div>
+    </div>
+</div>
+
+<div id="receipt-settings-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>ตั้งค่าข้อมูลใบเสร็จ</h3>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="receipt-store-name">ชื่อร้านค้า</label>
+                <input type="text" id="receipt-store-name" placeholder="ระบุชื่อร้านค้าของคุณ">
+            </div>
+            <div class="form-group">
+                <label for="receipt-address">ที่อยู่</label>
+                <input type="text" id="receipt-address" placeholder="เช่น 123/45 ถนน ABC, แขวง/ตำบล XYZ...">
+            </div>
+            <div class="form-group">
+                <label for="receipt-phone">เบอร์โทรศัพท์</label>
+                <input type="text" id="receipt-phone" placeholder="เช่น 02-123-4567">
+            </div>
+            <div class="form-group">
+                <label for="receipt-tax-id">เลขประจำตัวผู้เสียภาษี</label>
+                <input type="text" id="receipt-tax-id" placeholder="ระบุเลข 13 หลัก">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <div class="button-group">
+                <button type="button" id="cancel-receipt-settings-btn" style="background-color:var(--secondary-color)">ยกเลิก</button>
+                <button type="button" id="save-receipt-settings-btn" class="finish-sale">บันทึก</button>
+            </div>
         </div>
     </div>
 </div>
@@ -617,7 +656,7 @@
     // Firebase Initialization (Secure Method with Local Fallback)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, onSnapshot, addDoc, doc, deleteDoc, writeBatch, getDocs, query, where, setDoc, updateDoc, collectionGroup, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, addDoc, doc, deleteDoc, writeBatch, getDocs, query, where, setDoc, updateDoc, collectionGroup, getDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     let firebaseConfig;
     const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
@@ -652,7 +691,7 @@
         const auth = getAuth(app);
         setLogLevel('error');
 
-        window.firebaseServices = { db, auth, appId, api: { collection, onSnapshot, addDoc, doc, deleteDoc, writeBatch, getDocs, query, where, setDoc, updateDoc, collectionGroup } };
+        window.firebaseServices = { db, auth, appId, api: { collection, onSnapshot, addDoc, doc, deleteDoc, writeBatch, getDocs, query, where, setDoc, updateDoc, collectionGroup, getDoc } };
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -709,6 +748,8 @@ const POS_APP = {
         _costCalculationListener: null,
         productListPage: 1,
         productsPerPage: 10,
+        // [NEW] State for receipt settings
+        receiptSettings: {},
         // [REMOVED] Report state variables
         // [NEW] State สำหรับตรวจจับการสแกน
         lastInputTimestamp: 0,
@@ -724,12 +765,13 @@ const POS_APP = {
         });
     },
     
-    start() {
+    async start() {
         console.log("Initializing main application logic...");
         const barcodeInput = document.getElementById('barcode-input');
         if (barcodeInput) this.state.basePlaceholder = barcodeInput.getAttribute('data-base-placeholder');
         this.updatePlaceholderHint();
         this.clearDataOnStart();
+        await this.loadReceiptSettings(); // [MODIFIED] Load settings from Firestore on start
         this.filterHistoryForToday();
         if (this.state.tabs.size === 0) this.addNewSaleTab();
         this.listenForProducts();
@@ -745,12 +787,10 @@ const POS_APP = {
     // =================================================================
     setActiveOverlay(overlayName) {
         this.state.activeOverlay = overlayName;
-        // Logic will now only apply to remaining 'history' and 'settings' buttons
         document.querySelectorAll('.sidebar-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.view === overlayName);
         });
         if (!overlayName) {
-             // When returning to the main view, no sidebar button is active, which is correct.
             document.getElementById('barcode-input')?.focus();
         }
     },
@@ -772,39 +812,29 @@ const POS_APP = {
         this.setActiveOverlay(null);
     },
     
-setupEventListeners() {
-        // --- Sidebar Navigation ---
+    setupEventListeners() {
         document.getElementById('app-sidebar').addEventListener('click', (e) => {
             const button = e.target.closest('.sidebar-btn');
             if (!button) return;
             const view = button.dataset.view;
-
-            // Simplified logic after removing 'pos' button
-            if (view === 'history') {
-                this.showHistoryModal();
-            } else if (view === 'settings') {
-                this.showSettingsModal();
-            }
+            if (view === 'history') this.showHistoryModal();
+            else if (view === 'settings') this.showSettingsModal();
         });
 
-        // --- Main Modal Close Buttons ---
         document.querySelectorAll('.close-main-modal-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 this.hideHistoryModal();
                 this.hideSettingsModal();
-                // [REMOVED] Report modal hide logic
             });
         });
 
-        // [REMOVED] Report Modal Listeners
+        document.getElementById('receipt-settings-btn').addEventListener('click', this.showReceiptSettingsModal.bind(this));
+        document.getElementById('save-receipt-settings-btn').addEventListener('click', this.saveReceiptSettings.bind(this));
+        document.getElementById('cancel-receipt-settings-btn').addEventListener('click', this.hideReceiptSettingsModal.bind(this));
 
-        // --- Existing Event Listeners ---
         document.getElementById('import-from-sheet-btn').addEventListener('click', () => this.importFromGoogleSheet(false));
         const barcodeInput = document.getElementById('barcode-input');
-        barcodeInput.addEventListener('input', (e) => {
-            this.detectScan(); // [NEW] ตรวจจับการสแกนทุกครั้งที่มีการ input
-            this.handleInstantSearch(e);
-        });
+        barcodeInput.addEventListener('input', this.handleInstantSearch.bind(this));
         barcodeInput.addEventListener('keydown', this.handleSearchKeyDown.bind(this));
         barcodeInput.addEventListener('keydown', this.detectKeyboardLayout.bind(this));
         document.getElementById('discount-input').addEventListener('input', this.updateCartOnInput.bind(this));
@@ -876,9 +906,6 @@ setupEventListeners() {
             }
         });
     },
-    // =================================================================
-    // == [REMOVED] REPORTING LOGIC
-    // =================================================================
     
     // =================================================================
     // == DATA & CORE LOGIC
@@ -1099,6 +1126,7 @@ setupEventListeners() {
 
     getSalesHistoryCollectionRef() { const { appId, db, api } = window.firebaseServices; return api.collection(db, `artifacts/${appId}/public/data/salesHistory`); },
     getProductsCollectionRef() { const { appId, db, api } = window.firebaseServices; return api.collection(db, `artifacts/${appId}/public/data/products`); },
+    getReceiptSettingsDocRef() { const { appId, db, api } = window.firebaseServices; return api.doc(db, `artifacts/${appId}/public/data/configuration/receipt`); },
     listenForProducts() { 
         const productsCollectionRef = this.getProductsCollectionRef(); 
         if (!productsCollectionRef) return; 
@@ -1579,7 +1607,7 @@ setupEventListeners() {
             if (!this.state.isRestrictedMode) {
                 itemInfoHTML += ` <span class="sub-text">(คงเหลือ: ${stockInThisUnit.toFixed(2)} ${productUnit.pricingUnit.unitName})(ต้นทุน: ${(productUnit.pricingUnit.cost || 0).toFixed(2)})</span>`;
             }
-            li.innerHTML = `<div class="col-seq">${index + 1}</div><div class="col-name">${itemInfoHTML}</div><div class="col-qty"><input type="number" class="item-input" value="${quantity}" onchange="POS_APP.editItemQuantity(${index}, this.value)" onfocus="this.select()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('discount-input').focus(); document.getElementById('discount-input').select(); }"></div><div class="col-price"><input type="text" class="item-input" value="${pricePerUnit.toFixed(2)}" disabled></div><div class="col-total"><input type="text" class="item-input" value="${totalForItem.toFixed(2)}" onchange="POS_APP.editItemTotal(${index}, this.value)" onfocus="this.select()"></div><div class="col-delete"><button type="button" class="delete-item-btn" onclick="POS_APP.deleteItemFromCart(${index})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></div>`;
+            li.innerHTML = `<div class="col-seq">${index + 1}</div><div class="col-name">${itemInfoHTML}</div><div class="col-qty"><input type="number" class="item-input" value="${quantity}" onchange="POS_APP.editItemQuantity(${index}, this.value)" onfocus="this.select()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('discount-input').focus(); document.getElementById('discount-input').select(); }"></div><div class="col-price"><input type="text" class="item-input" value="${pricePerUnit.toFixed(2)}" disabled></div><div class="col-total"><input type="text" class="item-input" value="${totalForItem.toFixed(2)}" onchange="POS_APP.editItemTotal(${index}, this.value)" onfocus="this.select()"></div><div class="col-delete"><button type="button" class="delete-item-btn" onclick="POS_APP.deleteItemFromCart(${index})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></div>`;
             cartItemsElement.appendChild(li);
         });
         const total = subtotal - (discount || 0);
@@ -1739,7 +1767,7 @@ setupEventListeners() {
             if(this.state.activeOverlay) {
                 this.hideHistoryModal();
                 this.hideSettingsModal();
-                // [REMOVED] report modal hide logic
+                this.hideReceiptSettingsModal();
             } else if (document.getElementById('payment-modal').style.display === 'flex') { e.preventDefault(); this.hidePaymentModal(); } 
             else if (document.getElementById('delete-confirm-modal').style.display === 'flex') { e.preventDefault(); this.hideDeleteConfirmModal(); } 
             else if (document.getElementById('clear-options-modal').style.display === 'flex') { e.preventDefault(); this.hideClearOptionsModal(); } 
@@ -1904,19 +1932,198 @@ setupEventListeners() {
             
             await batch.commit();
             
+            this.hidePaymentModal();
             const tabToDelete = this.state.activeTabId;
             document.getElementById('edit-status').style.display = 'none';
-            this.hidePaymentModal();
             this.closeTab(tabToDelete, false);
+            
         } catch (e) {
             console.error("Error committing sale and updating stock: ", e);
-            this.showInfoModal("ข้อผิดพลาด", "เกิดข้อผิดพลาดในการบันทึกข้อมูลการขายและอัปเดตสต็อก!", true);
+            this.showInfoModal("ผิดพลาด", "เกิดข้อผิดพลาดในการบันทึกข้อมูลการขายและอัปเดตสต็อก!", true);
         } finally {
             this.state.isSaving = false;
             confirmButton.disabled = false;
         }
     },
 
+    printSaleRecordFromHistory(firestoreId) {
+        const saleToPrint = this.state.salesHistory.find(s => s.firestoreId === firestoreId);
+        if (saleToPrint) {
+            this.printReceipt(saleToPrint);
+        } else {
+            this.showInfoModal("ผิดพลาด", "ไม่พบข้อมูลการขายสำหรับพิมพ์", true);
+        }
+    },
+    
+    printReceipt(saleRecord) {
+        const { storeName, address, phone, taxId } = this.state.receiptSettings;
+        const receiptWindow = window.open('', 'PRINT', 'height=600,width=400');
+
+        receiptWindow.document.write('<html><head><title>ใบเสร็จ</title>');
+        receiptWindow.document.write('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">');
+        receiptWindow.document.write('<style>');
+        receiptWindow.document.write(`
+            body { 
+                font-family: 'Sarabun', monospace; 
+                margin: 0; 
+                padding: 15px; 
+                font-size: 10pt; 
+                line-height: 1.5;
+                background-color: #fff;
+                color: #000;
+            }
+            .receipt-container { 
+                width: 100%; 
+                max-width: 320px; 
+                margin: auto; 
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 15px;
+            }
+            .header h2 {
+                margin: 0;
+                font-size: 1.4em;
+            }
+            .header p {
+                margin: 2px 0;
+                font-size: 0.9em;
+            }
+            .info-table, .summary-table {
+                width: 100%;
+                font-size: 0.9em;
+            }
+            .info-table td:last-child, .summary-table td:last-child {
+                text-align: right;
+            }
+            .items-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 10px 0;
+            }
+            .items-table thead tr {
+                border-top: 1px dashed #000;
+                border-bottom: 1px dashed #000;
+            }
+            .items-table th {
+                text-align: left;
+                padding: 5px 0;
+            }
+            .items-table th:last-child {
+                text-align: right;
+            }
+            .items-table td {
+                padding: 3px 0;
+                vertical-align: top;
+            }
+            .item-name {
+                word-break: break-all;
+            }
+            .item-details {
+                text-align: right;
+                white-space: nowrap;
+            }
+            .summary-section {
+                margin-top: 10px;
+                border-top: 1px dashed #000;
+                padding-top: 5px;
+            }
+            .summary-table .total-row td {
+                font-weight: bold;
+                font-size: 1.1em;
+                padding-top: 5px;
+            }
+            .footer {
+                text-align: center;
+                margin-top: 20px;
+                font-size: 0.9em;
+            }
+        `);
+        receiptWindow.document.write('</style></head><body>');
+
+        const itemsHtml = saleRecord.items.map(item => `
+            <tr>
+                <td class="item-name">${this.escapeHtml(item.name)}</td>
+                <td class="item-details">${item.quantity}</td>
+                <td class="item-details">${(item.quantity * item.price).toFixed(2)}</td>
+            </tr>
+        `).join('');
+
+        const receiptContent = `
+            <div class="receipt-container">
+                <div class="header">
+                    <h2>${this.escapeHtml(storeName) || 'ชื่อร้านค้า'}</h2>
+                    <p>${this.escapeHtml(address) || 'ที่อยู่'}</p>
+                    <p>${this.escapeHtml(phone) ? 'โทร: ' + this.escapeHtml(phone) : ''}</p>
+                    <p>${this.escapeHtml(taxId) ? 'เลขประจำตัวผู้เสียภาษี: ' + this.escapeHtml(taxId) : ''}</p>
+                </div>
+
+                <table class="info-table">
+                    <tr>
+                        <td>เลขที่ใบเสร็จ:</td>
+                        <td>${saleRecord.id}</td>
+                    </tr>
+                    <tr>
+                        <td>วันที่:</td>
+                        <td>${new Date(saleRecord.timestamp).toLocaleString('th-TH')}</td>
+                    </tr>
+                </table>
+
+                <table class="items-table">
+                     <thead>
+                        <tr>
+                            <th>รายการ</th>
+                            <th>จำนวน</th>
+                            <th>ราคา</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                </table>
+                
+                <div class="summary-section">
+                    <table class="summary-table">
+                         <tr>
+                            <td>รวมเป็นเงิน</td>
+                            <td>${saleRecord.subtotal.toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td>ส่วนลด</td>
+                            <td>${saleRecord.discount.toFixed(2)}</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>ยอดสุทธิ</td>
+                            <td>${saleRecord.total.toFixed(2)}</td>
+                        </tr>
+                         <tr>
+                            <td>รับเงินสด</td>
+                            <td>${saleRecord.cashReceived.toFixed(2)}</td>
+                        </tr>
+                         <tr>
+                            <td>เงินทอน</td>
+                            <td>${saleRecord.change.toFixed(2)}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="footer">
+                    <p>*** ขอบคุณที่ใช้บริการ ***</p>
+                </div>
+            </div>
+        `;
+
+        receiptWindow.document.write(receiptContent);
+        receiptWindow.document.write('</body></html>');
+        receiptWindow.document.close();
+        receiptWindow.focus();
+
+        setTimeout(() => {
+            receiptWindow.print();
+            receiptWindow.close();
+        }, 250); 
+    },
+    
     async editSaleRecord(firestoreId) {
         if (this.state.tabs.size >= 5) { this.showInfoModal("ไม่สามารถแก้ไข", "เปิดบิลครบ 5 บิลแล้ว ไม่สามารถเปิดบิลเพื่อแก้ไขได้", true); return; }
         const saleToEdit = this.state.salesHistory.find(s => s.firestoreId === firestoreId);
@@ -2023,10 +2230,14 @@ setupEventListeners() {
                     return `${name} (x${item.quantity})`;
                 }).join('<br>');
                 const discountAmount = sale.discount ? sale.discount.toFixed(2) : '0.00';
-                let actionCellHTML = '';
+                
+                let adminActions = `<button type="button" class="edit-history-btn" onclick="POS_APP.editSaleRecord('${sale.firestoreId}')">แก้ไข</button><button type="button" class="delete-history-btn" onclick="POS_APP.showDeleteConfirmModal('${sale.firestoreId}', false)">ลบ</button>`;
+                let actionCellHTML = `<button type="button" class="print-history-btn" onclick="POS_APP.printSaleRecordFromHistory('${sale.firestoreId}')">พิมพ์</button>`;
+                
                 if (!this.state.isRestrictedMode) {
-                    actionCellHTML = `<button type="button" class="edit-history-btn" onclick="POS_APP.editSaleRecord('${sale.firestoreId}')">แก้ไข</button><button type="button" class="delete-history-btn" onclick="POS_APP.showDeleteConfirmModal('${sale.firestoreId}', false)">ลบ</button>`;
+                    actionCellHTML += adminActions;
                 }
+                
                 row.innerHTML = `<td>${new Date(sale.timestamp).toLocaleString('th-TH')}</td><td>${sale.id}</td><td>${itemDetails}</td><td>${discountAmount}</td><td><strong>${sale.total.toFixed(2)}</strong></td><td style="white-space: nowrap;">${actionCellHTML}</td>`;
             });
         }
@@ -2064,6 +2275,7 @@ setupEventListeners() {
             const shouldShow = !this.state.isRestrictedMode && !isSearching;
             summarySection.style.display = shouldShow ? 'block' : 'none';
         }
+        this.updateHistoryDisplay();
         this.updateCartDisplay(); 
     },
     addNewSaleTab(customName = '') {
@@ -2239,6 +2451,55 @@ filterHistoryByDateTime() {
         worksheet['!cols'] = [ { wch: 20 }, { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 30 }, { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 } ];
         XLSX.writeFile(workbook, `pos-history-base-units-${new Date().toISOString().split('T')[0]}.xlsx`);
     },
+
+    // --- [NEW] Receipt Settings Logic ---
+    async loadReceiptSettings() {
+        const { api } = window.firebaseServices;
+        const docRef = this.getReceiptSettingsDocRef();
+        try {
+            const docSnap = await api.getDoc(docRef);
+            if (docSnap.exists()) {
+                this.state.receiptSettings = docSnap.data();
+            } else {
+                // Set default if not exists
+                this.state.receiptSettings = { storeName: '', address: '', phone: '', taxId: '' };
+            }
+        } catch(e) {
+            console.error("Error loading receipt settings:", e);
+            this.state.receiptSettings = { storeName: '', address: '', phone: '', taxId: '' };
+        }
+    },
+    async saveReceiptSettings() {
+        const { api } = window.firebaseServices;
+        const docRef = this.getReceiptSettingsDocRef();
+        const newSettings = {
+            storeName: document.getElementById('receipt-store-name').value,
+            address: document.getElementById('receipt-address').value,
+            phone: document.getElementById('receipt-phone').value,
+            taxId: document.getElementById('receipt-tax-id').value,
+        };
+        try {
+            await api.setDoc(docRef, newSettings, { merge: true });
+            this.state.receiptSettings = newSettings;
+            this.hideReceiptSettingsModal();
+            this.showInfoModal("สำเร็จ", "บันทึกข้อมูลใบเสร็จเรียบร้อยแล้ว");
+        } catch(e) {
+            console.error("Error saving receipt settings:", e);
+            this.showInfoModal("ผิดพลาด", "ไม่สามารถบันทึกการตั้งค่าได้", true);
+        }
+    },
+    showReceiptSettingsModal() {
+        const { storeName, address, phone, taxId } = this.state.receiptSettings;
+        document.getElementById('receipt-store-name').value = storeName || '';
+        document.getElementById('receipt-address').value = address || '';
+        document.getElementById('receipt-phone').value = phone || '';
+        document.getElementById('receipt-tax-id').value = taxId || '';
+        document.getElementById('receipt-settings-modal').style.display = 'flex';
+    },
+    hideReceiptSettingsModal() {
+        document.getElementById('receipt-settings-modal').style.display = 'none';
+    },
+
 };
 
 document.addEventListener('DOMContentLoaded', () => {
