@@ -212,11 +212,17 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        font-size: 0.80em; /* [UPDATED] ลดขนาดลง 20% จาก 0.95em */
+        font-size: 0.85em;
     }
     .search-item:last-child { border-bottom: none; }
     .search-item:hover, .search-item.selected { background-color: var(--primary-color); color: var(--white-color); }
+    
+    .search-item .price {
+        color: var(--success-color);
+        font-weight: bold;
+    }
     .search-item.selected .price, .search-item.selected .sub-text { color: var(--white-color); }
+
     .search-item .sub-text { font-size: 0.8em; color: var(--secondary-color); font-weight: normal; }
     .search-item .highlight { background-color: var(--warning-color); border-radius: 3px; padding: 0 4px; color: var(--dark-text); }
     .search-item.selected .highlight { background-color: #ffdd72; }
@@ -1524,7 +1530,19 @@ const POS_APP = {
         this.state.selectedSearchIndex = results.length > 0 ? 0 : -1;
         this.displaySearchResults(results, queryToSearch);
     },
-    // [UPDATED] เพิ่มการแสดงราคา และปรับปรุง HTML structure
+    // [NEW] ฟังก์ชันสำหรับจัดรูปแบบราคา
+    formatPrice(price) {
+        const num = parseFloat(price);
+        if (isNaN(num)) {
+            return '0.-';
+        }
+        // ตรวจสอบว่าเป็นเลขจำนวนเต็มหรือไม่
+        if (num % 1 === 0) {
+            return `${num.toFixed(0)}.-`;
+        } else {
+            return num.toFixed(2);
+        }
+    },
     displaySearchResults(results, query) {
         const resultsContainer = document.getElementById('search-results');
         resultsContainer.innerHTML = '';
@@ -1536,8 +1554,8 @@ const POS_APP = {
             if (index === this.state.selectedSearchIndex) itemDiv.classList.add('selected');
             let highlightedDisplay = this.escapeHtml(productUnit.display);
             
-            // [UPDATED] เพิ่ม span.price เข้ามา
-            itemDiv.innerHTML = `<div><span>${highlightedDisplay}</span></div><span class="price">${productUnit.price.toFixed(2)}</span>`;
+            // [UPDATED] เรียกใช้ฟังก์ชัน formatPrice
+            itemDiv.innerHTML = `<div><span>${highlightedDisplay}</span></div><span class="price">${this.formatPrice(productUnit.price)}</span>`;
             
             itemDiv.onclick = () => {
                 const inputValue = document.getElementById('barcode-input').value.trim();
