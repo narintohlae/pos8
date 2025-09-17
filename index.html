@@ -212,7 +212,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        font-size: 0.85em;
+        font-size: 0.85em; /* ลดขนาดลง 20% จาก 0.95em */
     }
     .search-item:last-child { border-bottom: none; }
     .search-item:hover, .search-item.selected { background-color: var(--primary-color); color: var(--white-color); }
@@ -777,7 +777,7 @@ const POS_APP = {
         if (barcodeInput) this.state.basePlaceholder = barcodeInput.getAttribute('data-base-placeholder');
         this.updatePlaceholderHint();
         this.clearDataOnStart();
-        await this.loadReceiptSettings(); // [MODIFIED] Load settings from Firestore on start
+        await this.loadReceiptSettings();
         this.filterHistoryForToday();
         if (this.state.tabs.size === 0) this.addNewSaleTab();
         this.listenForProducts();
@@ -843,6 +843,9 @@ const POS_APP = {
         barcodeInput.addEventListener('input', this.handleInstantSearch.bind(this));
         barcodeInput.addEventListener('keydown', this.handleSearchKeyDown.bind(this));
         barcodeInput.addEventListener('keydown', this.detectKeyboardLayout.bind(this));
+        // [FIXED] เพิ่มการเรียกใช้ฟังก์ชันตรวจจับสแกนเนอร์กลับเข้ามา
+        barcodeInput.addEventListener('keydown', this.detectScan.bind(this));
+        
         document.getElementById('discount-input').addEventListener('input', this.updateCartOnInput.bind(this));
         document.getElementById('discount-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this.showPaymentModal(); }});
         document.querySelector('.finish-sale').addEventListener('click', this.showPaymentModal.bind(this));
@@ -1148,31 +1151,24 @@ const POS_APP = {
             this.showInfoModal("ข้อผิดพลาด", "ไม่สามารถโหลดรายการสินค้าจากฐานข้อมูลได้", true); 
         }); 
     },
-    // [REPLACED] Old getPriceForQuantity function
     calculateItemTotal(pricingUnit, quantity) {
         if (!pricingUnit) return 0;
         
-        // Fallback to simple pricing if no tiers are set up
         if (!pricingUnit.priceTiers || pricingUnit.priceTiers.length === 0) {
             return (pricingUnit.defaultPrice || 0) * quantity;
         }
 
-        // Sort tiers from the largest quantity to the smallest
         const sortedTiers = [...pricingUnit.priceTiers].sort((a, b) => b.quantity - a.quantity);
         
         let totalPrice = 0;
         let remainingQuantity = quantity;
 
-        // Loop through each tier to break down the quantity into bundles
         for (const tier of sortedTiers) {
-            // Skip invalid tiers (quantity must be positive)
             if (tier.quantity <= 0) continue; 
             
             if (remainingQuantity >= tier.quantity) {
                 const numBundles = Math.floor(remainingQuantity / tier.quantity);
-                // Add the total price of the bundles
                 totalPrice += numBundles * tier.price;
-                // Update the remaining quantity
                 remainingQuantity %= tier.quantity;
             }
         }
@@ -1460,18 +1456,15 @@ const POS_APP = {
             this.handleDeleteProduct(id); 
         } 
     },
-    // [NEW] ฟังก์ชันตรวจจับการสแกน
     detectScan() {
         const now = Date.now();
         const timeDiff = now - this.state.lastInputTimestamp;
         this.state.lastInputTimestamp = now;
 
-        // ถ้า input เกิดขึ้นถี่มาก (น้อยกว่า 50ms) ให้ถือว่าเป็นการสแกน
         if (timeDiff < 50) {
             this.state.isScanning = true;
         }
 
-        // ตั้งเวลาเพื่อรีเซ็ตสถานะการสแกน หากไม่มี input เข้ามาอีกใน 100ms
         clearTimeout(this.state.scanResetTimer);
         this.state.scanResetTimer = setTimeout(() => {
             this.state.isScanning = false;
@@ -1492,7 +1485,6 @@ const POS_APP = {
         }
 
         let queryToSearch;
-        // [MODIFIED] เช็คว่าเป็น scan หรือไม่ ถ้าใช่ให้แปลภาษา
         if (this.state.isScanning) {
             queryToSearch = this.translateThaiToEng(effectiveQuery).toLowerCase();
         } else {
@@ -1530,13 +1522,11 @@ const POS_APP = {
         this.state.selectedSearchIndex = results.length > 0 ? 0 : -1;
         this.displaySearchResults(results, queryToSearch);
     },
-    // [NEW] ฟังก์ชันสำหรับจัดรูปแบบราคา
     formatPrice(price) {
         const num = parseFloat(price);
         if (isNaN(num)) {
             return '0.-';
         }
-        // ตรวจสอบว่าเป็นเลขจำนวนเต็มหรือไม่
         if (num % 1 === 0) {
             return `${num.toFixed(0)}.-`;
         } else {
@@ -1554,7 +1544,6 @@ const POS_APP = {
             if (index === this.state.selectedSearchIndex) itemDiv.classList.add('selected');
             let highlightedDisplay = this.escapeHtml(productUnit.display);
             
-            // [UPDATED] เรียกใช้ฟังก์ชัน formatPrice
             itemDiv.innerHTML = `<div><span>${highlightedDisplay}</span></div><span class="price">${this.formatPrice(productUnit.price)}</span>`;
             
             itemDiv.onclick = () => {
@@ -1606,11 +1595,9 @@ const POS_APP = {
             let pricePerUnit;
 
             if (typeof priceOverride === 'number') {
-                // If a price has been manually overridden in the cart, use it
                 pricePerUnit = priceOverride;
                 totalForItem = pricePerUnit * quantity;
             } else {
-                // Otherwise, use the new bundling logic to calculate the total
                 totalForItem = this.calculateItemTotal(productUnit.pricingUnit, quantity);
                 pricePerUnit = quantity > 0 ? totalForItem / quantity : 0;
             }
@@ -2479,7 +2466,6 @@ filterHistoryByDateTime() {
             if (docSnap.exists()) {
                 this.state.receiptSettings = docSnap.data();
             } else {
-                // Set default if not exists
                 this.state.receiptSettings = { storeName: '', address: '', phone: '', taxId: '' };
             }
         } catch(e) {
