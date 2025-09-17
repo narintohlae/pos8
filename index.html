@@ -48,7 +48,7 @@
     /* --- [MODIFIED] Sidebar (ย้ายไปอยู่ข้างแท็บตะกร้า) --- */
     #app-sidebar {
         display: flex; /* เปลี่ยนเป็น Flexbox */
-        gap: 0.5rem;   /* ลดระยะห่าง */
+        gap: 0.5rem;    /* ลดระยะห่าง */
         /* ลบสไตล์การจัดวางเดิมทั้งหมด */
     }
 
@@ -212,7 +212,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        font-size: 0.95em; /* [MODIFIED] ปรับขนาดตัวอักษรให้เท่าช่องค้นหา */
+        font-size: 0.80em; /* [UPDATED] ลดขนาดลง 20% จาก 0.95em */
     }
     .search-item:last-child { border-bottom: none; }
     .search-item:hover, .search-item.selected { background-color: var(--primary-color); color: var(--white-color); }
@@ -700,16 +700,16 @@
             } else {
                  console.log("No user is signed in. Attempting authentication...");
                  try {
-                        if (initialAuthToken) {
-                            await signInWithCustomToken(auth, initialAuthToken);
-                            console.log("Signed in with custom token.");
-                        } else {
-                            await signInAnonymously(auth);
-                            console.log("Signed in anonymously.");
-                        }
+                         if (initialAuthToken) {
+                             await signInWithCustomToken(auth, initialAuthToken);
+                             console.log("Signed in with custom token.");
+                         } else {
+                             await signInAnonymously(auth);
+                             console.log("Signed in anonymously.");
+                         }
                  } catch (authError) {
-                        console.error("Firebase Authentication Failed:", authError);
-                        window.dispatchEvent(new CustomEvent('firebase-failed', { detail: authError }));
+                         console.error("Firebase Authentication Failed:", authError);
+                         window.dispatchEvent(new CustomEvent('firebase-failed', { detail: authError }));
                  }
             }
         });
@@ -1524,7 +1524,7 @@ const POS_APP = {
         this.state.selectedSearchIndex = results.length > 0 ? 0 : -1;
         this.displaySearchResults(results, queryToSearch);
     },
-    // [MODIFIED] ปิดการแสดงราคา
+    // [UPDATED] เพิ่มการแสดงราคา และปรับปรุง HTML structure
     displaySearchResults(results, query) {
         const resultsContainer = document.getElementById('search-results');
         resultsContainer.innerHTML = '';
@@ -1536,8 +1536,8 @@ const POS_APP = {
             if (index === this.state.selectedSearchIndex) itemDiv.classList.add('selected');
             let highlightedDisplay = this.escapeHtml(productUnit.display);
             
-            // ปิดการแสดงราคาโดยการลบ span.price ออก
-            itemDiv.innerHTML = `<div><span>${highlightedDisplay}</span></div>`;
+            // [UPDATED] เพิ่ม span.price เข้ามา
+            itemDiv.innerHTML = `<div><span>${highlightedDisplay}</span></div><span class="price">${productUnit.price.toFixed(2)}</span>`;
             
             itemDiv.onclick = () => {
                 const inputValue = document.getElementById('barcode-input').value.trim();
@@ -2070,7 +2070,7 @@ const POS_APP = {
                 </table>
 
                 <table class="items-table">
-                     <thead>
+                      <thead>
                         <tr>
                             <th>รายการ</th>
                             <th>จำนวน</th>
@@ -2084,26 +2084,26 @@ const POS_APP = {
                 
                 <div class="summary-section">
                     <table class="summary-table">
-                         <tr>
-                            <td>รวมเป็นเงิน</td>
-                            <td>${saleRecord.subtotal.toFixed(2)}</td>
-                        </tr>
-                        <tr>
-                            <td>ส่วนลด</td>
-                            <td>${saleRecord.discount.toFixed(2)}</td>
-                        </tr>
-                        <tr class="total-row">
-                            <td>ยอดสุทธิ</td>
-                            <td>${saleRecord.total.toFixed(2)}</td>
-                        </tr>
-                         <tr>
-                            <td>รับเงินสด</td>
-                            <td>${saleRecord.cashReceived.toFixed(2)}</td>
-                        </tr>
-                         <tr>
-                            <td>เงินทอน</td>
-                            <td>${saleRecord.change.toFixed(2)}</td>
-                        </tr>
+                           <tr>
+                                <td>รวมเป็นเงิน</td>
+                                <td>${saleRecord.subtotal.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td>ส่วนลด</td>
+                                <td>${saleRecord.discount.toFixed(2)}</td>
+                            </tr>
+                            <tr class="total-row">
+                                <td>ยอดสุทธิ</td>
+                                <td>${saleRecord.total.toFixed(2)}</td>
+                            </tr>
+                             <tr>
+                                <td>รับเงินสด</td>
+                                <td>${saleRecord.cashReceived.toFixed(2)}</td>
+                            </tr>
+                             <tr>
+                                <td>เงินทอน</td>
+                                <td>${saleRecord.change.toFixed(2)}</td>
+                            </tr>
                     </table>
                 </div>
 
