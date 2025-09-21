@@ -48,7 +48,7 @@
     /* --- [MODIFIED] Sidebar (ย้ายไปอยู่ข้างแท็บตะกร้า) --- */
     #app-sidebar {
         display: flex; /* เปลี่ยนเป็น Flexbox */
-        gap: 0.5rem;    /* ลดระยะห่าง */
+        gap: 0.5rem;   /* ลดระยะห่าง */
         /* ลบสไตล์การจัดวางเดิมทั้งหมด */
     }
 
@@ -274,6 +274,11 @@
     #cart-items li:hover { background-color: #e9ecef; border-color: var(--border-color); }
     #cart-items li.highlight-quantity { background-color: #fff3cd; border-left: 4px solid var(--warning-color); }
     #cart-items li.highlight-quantity:hover { background-color: #ffeeba; }
+    /* [NEW] Add cursor for items with promotions */
+    #cart-items li.has-promotion {
+        cursor: help;
+        border-left: 4px solid var(--info-color);
+    }
     #cart-items .col-name { text-align: left; }
     #cart-items .col-seq, #cart-items .col-delete { text-align: center; }
     #cart-items .col-price, #cart-items .col-total { text-align: right; }
@@ -286,33 +291,49 @@
     .delete-item-btn:hover { transform: scale(1.1); background-color: #fce8e6; }
     .delete-item-btn svg { width: 16px; height: 16px; }
 
-    /* [FINAL UPDATE - REDUCED] ทำให้ส่วนสรุปยอดทั้งหมดใหญ่และโปร่งขึ้น */
+    /* --- CSS for Totals and Promotion Section --- */
     .totals-section {
-        padding-top: 0.95rem; /* ลดจาก 1rem */
+        padding-top: 0.95rem;
         border-top: 2px solid var(--border-color);
-        margin-top: 0.95rem; /* ลดจาก 1rem */
+        margin-top: auto; /* Push to the bottom */
         flex-shrink: 0;
+        display: flex; /* Use flexbox for layout */
+        justify-content: flex-end; /* Align children to the end (right) */
+        align-items: flex-end; /* Align to the bottom */
+        gap: 1rem;
     }
+
+    /* [MODIFIED] Set width for summary */
+    .totals-summary {
+        width: 60%;
+        min-width: 350px; /* Ensure it doesn't get too squished */
+    }
+    /* --- End of Modified CSS --- */
+
+
     .total-row {
         display: flex;
         justify-content: space-between;
-        font-size: 1.14em; /* ลดจาก 1.2em */
+        font-size: 1.14em; 
         align-items: center;
     }
     .total-row label, .total-row span { font-weight: bold; }
     #discount-input { width: 70px; font-size: 1em; text-align: right; height: 28px; padding: 4px 6px; }
     #cart-total {
         color: var(--success-color);
-        font-size: 1.805em; /* ลดจาก 1.9em */
+        font-size: 1.805em; 
     }
 
     .button-group { display: flex; gap: 0.8rem; margin-top: 1.2rem; }
-    /* [FINAL UPDATE - REDUCED] เพิ่มระยะห่างด้านบนของกลุ่มปุ่ม */
+
     .button-group-2 {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 0.8rem;
         flex-shrink: 0;
+        width: 100%; /* Button group inside summary now takes 100% of its parent */
+        margin-left: auto;
+        margin-top: 0.8rem; /* Add some space above buttons */
     }
 
     button {
@@ -340,7 +361,6 @@
     button.clear-cart { background-color: var(--danger-color); border-color: var(--danger-color); }
     .delete-history-btn { background-color: var(--danger-color); padding: 0.25rem 0.6rem; font-size: 0.85em; }
     .edit-history-btn { background-color: var(--info-color); padding: 0.25rem 0.6rem; font-size: 0.85em; }
-    /* [NEW] Print button style */
     .print-history-btn { background-color: var(--secondary-color); padding: 0.25rem 0.6rem; font-size: 0.85em; margin-right: 5px; }
 
 
@@ -377,15 +397,14 @@
     #cash-received-input { font-size: 2.8em; text-align: right; width: 50%; height: 60px; padding: 5px 10px; }
     #payment-change { font-size: 3.5em; color: var(--success-color); }
     
-    /* [MODIFIED] ปรับ Container ของแท็บเพื่อรองรับ Sidebar */
     .cart-tabs-container {
         display: flex;
         align-items: center;
-        justify-content: space-between; /* ดัน Sidebar ไปด้านขวา */
+        justify-content: space-between;
         border-bottom: 2px solid var(--border-color);
         margin-bottom: 0.3rem;
         flex-shrink: 0;
-        gap: 0.5rem; /* เพิ่มระยะห่างเล็กน้อย */
+        gap: 0.5rem;
     }
     #cart-tabs { display: flex; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
     .tab-button { padding: 0.7rem 1.1rem; cursor: pointer; background-color: transparent; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; font-size: 0.95em; color: var(--secondary-color); position: relative; flex-shrink: 0; transition: color 0.3s, border-color 0.3s; }
@@ -419,6 +438,45 @@
     .pagination-controls button.active { background-color: var(--primary-color); color: var(--white-color); font-weight: bold; }
     .pagination-controls button:disabled { background-color: var(--light-bg); border-color: var(--border-color); color: var(--secondary-color); cursor: not-allowed; opacity: 0.6; }
 
+    /* [NEW] Styles for Promotion Tooltip */
+    #promotion-tooltip {
+        display: none;
+        position: fixed;
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        padding: 1rem;
+        z-index: 1001;
+        max-width: 300px;
+        pointer-events: none; /* Prevent tooltip from blocking mouse events */
+        font-size: 0.85em;
+        line-height: 1.6;
+    }
+    #promotion-tooltip h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1em;
+        color: var(--primary-color);
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0.4rem;
+    }
+    #promotion-tooltip ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+    #promotion-tooltip li {
+        margin-bottom: 0.25rem;
+    }
+    #promotion-tooltip .highlight {
+        font-weight: bold;
+        color: var(--dark-text);
+        background-color: var(--warning-color);
+        padding: 1px 4px;
+        border-radius: 3px;
+    }
+
+
     /* Responsive */
     @media (max-width: 992px) {
         body { overflow: auto; height: auto; }
@@ -426,7 +484,6 @@
         .search-column, .cart-column { width: 100%; min-height: 450px; padding: var(--gap); }
         .cart-column { padding-top: 0; }
         #app-sidebar {
-            /* On smaller screens, keep it as a grid but ensure it's not inside a fixed-height container */
             margin-top: var(--gap);
         }
         #product-editor-modal .form-content-area { grid-template-columns: 1fr; }
@@ -451,17 +508,14 @@
         .pagination-controls button { padding: 0.4rem 0.8rem; }
     }
 
-/* [NEW LAYOUT] CSS สำหรับจัดระเบียบ Filter ในหน้า History */
 #history-filter-section {
     display: grid;
-    /* แบ่งเป็น 3 ส่วน: ค้นหา, วันที่/เวลา, ปุ่ม */
     grid-template-columns: 1.5fr 2.5fr 1fr;
     gap: 1.2rem;
     align-items: end;
     margin-bottom: 1.2rem;
 }
 
-/* ทำให้บนจอเล็กแสดงผลเป็น 1 คอลัมน์ */
 @media (max-width: 1200px) {
     #history-filter-section {
         grid-template-columns: 1fr;
@@ -475,7 +529,7 @@
     <div class="search-column">
         <div class="card">
             <h2>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 ค้นหาสินค้า
             </h2>
             <div class="form-group">
@@ -523,134 +577,27 @@
                 <span class="col-delete">ลบ</span>
             </div>
             <ul id="cart-items"></ul>
+            
             <div class="totals-section">
-                <div class="total-row"><label>ยอดรวม:</label><span id="cart-subtotal">0.00</span></div>
-                <div class="total-row"><label for="discount-input">ส่วนลด (บาท):</label><input type="number" id="discount-input" placeholder="0.00" step="any"></div>
-                <div class="total-row" style="font-size: 1.5em; color: var(--success-color);"><label>ยอดสุทธิ:</label><span id="cart-total">0.00</span></div>
-            </div>
-            <div class="button-group-2">
-                <button type="button" class="finish-sale">ชำระเงิน (F9)</button>
-                <button type="button" class="clear-cart">ล้างตะกร้า (Del)</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="history-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-body" style="display: flex; flex-direction: column;">
-            <section class="card" style="height: 100%; box-shadow: none; border: none; padding: 0;">
-                <h2>ประวัติการขาย</h2>
-                
-                <div id="history-filter-section">
-                    <div class="filter-group">
-                        <label for="history-search-input">ค้นหาบิล / สินค้า</label>
-                        <div class="input-with-icon">
-                            <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
-                            <input type="text" id="history-search-input" placeholder="รหัสการขาย หรือชื่อสินค้า...">
-                        </div>
-                    </div>
-                    
-                    <div class="filter-group">
-                        <label for="start-date">ช่วงวันที่และเวลา</label>
-                        <div style="display: flex; gap: 0.5rem; align-items: center;">
-                            <input type="date" id="start-date" title="วันที่เริ่มต้น">
-                            <input type="time" id="start-time" title="เวลาเริ่มต้น" style="width: 110px;">
-                            <span style="color: var(--secondary-color);">-</span>
-                            <input type="date" id="end-date" title="วันที่สิ้นสุด">
-                            <input type="time" id="end-time" title="เวลาสิ้นสุด" style="width: 110px;">
-                        </div>
-                    </div>
-
-                    <div class="filter-group">
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button type="button" id="filter-history-btn" style="width: 100%;">ค้นหา</button>
-                            <button type="button" id="today-history-btn" style="background-color: var(--info-color); width: 100%;">วันนี้</button>
-                        </div>
+                <div class="totals-summary">
+                    <div class="total-row"><label>ยอดรวม:</label><span id="cart-subtotal">0.00</span></div>
+                    <div class="total-row"><label for="discount-input">ส่วนลด (บาท):</label><input type="number" id="discount-input" placeholder="0.00" step="any"></div>
+                    <div class="total-row" style="font-size: 1.5em; color: var(--success-color);"><label>ยอดสุทธิ:</label><span id="cart-total">0.00</span></div>
+                    <div class="button-group-2">
+                         <button type="button" class="finish-sale">ชำระเงิน (F9)</button>
+                         <button type="button" class="clear-cart">ล้างตะกร้า (Del)</button>
                     </div>
                 </div>
-
-                <div class="button-group" style="justify-content: flex-start; margin-bottom: 1rem; margin-top:0;">
-                    <button type="button" id="export-excel-btn">Export to Excel</button>
-                    <button type="button" id="clear-all-history-btn" class="clear-cart" style="flex-grow: 0; margin-left: auto;">ล้างประวัติทั้งหมด</button>
-                </div>
-                <div id="history-table-wrapper">
-                    <table id="history-table">
-                        <thead><tr><th>วันที่/เวลา</th><th>รหัสการขาย</th><th>รายการสินค้า (จำนวน)</th><th>ส่วนลด</th><th>ยอดรวมสุทธิ</th><th>การกระทำ</th></tr></thead>
-                        <tbody id="history-body"></tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="close-main-modal-btn" style="background-color: var(--secondary-color);">ปิด</button>
-        </div>
-    </div>
-</div>
-
-<div id="settings-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-body">
-            <section class="card" style="height: 100%; box-shadow: none; border: none; padding: 0;">
-                <h2>การตั้งค่าและจัดการ</h2>
-                <div class="button-group">
-                    <button type="button" id="manage-products-btn" style="background-color: var(--info-color);">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                        จัดการสินค้า
-                    </button>
-                    <button type="button" id="import-from-sheet-btn" style="background-color: var(--success-color);">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
-                        นำเข้า/อัปเดตจาก Google Sheet
-                    </button>
-                    <button type="button" id="receipt-settings-btn" style="background-color: var(--secondary-color);">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                        ตั้งค่าใบเสร็จ
-                    </button>
-                </div>
-                <div style="margin-top: 1rem; display: flex; align-items: center;">
-                    <input type="checkbox" id="auto-import-toggle" style="width: auto; margin-right: 0.5rem;" checked>
-                    <label for="auto-import-toggle">นำเข้าข้อมูลอัตโนมัติเมื่อมีการเปลี่ยนแปลง (ตรวจสอบทุก 5 นาที)</label>
-                </div>
-            </section>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="close-main-modal-btn" style="background-color: var(--secondary-color);">ปิด</button>
-        </div>
-    </div>
-</div>
-
-<div id="receipt-settings-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>ตั้งค่าข้อมูลใบเสร็จ</h3>
-        </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label for="receipt-store-name">ชื่อร้านค้า</label>
-                <input type="text" id="receipt-store-name" placeholder="ระบุชื่อร้านค้าของคุณ">
-            </div>
-            <div class="form-group">
-                <label for="receipt-address">ที่อยู่</label>
-                <input type="text" id="receipt-address" placeholder="เช่น 123/45 ถนน ABC, แขวง/ตำบล XYZ...">
-            </div>
-            <div class="form-group">
-                <label for="receipt-phone">เบอร์โทรศัพท์</label>
-                <input type="text" id="receipt-phone" placeholder="เช่น 02-123-4567">
-            </div>
-            <div class="form-group">
-                <label for="receipt-tax-id">เลขประจำตัวผู้เสียภาษี</label>
-                <input type="text" id="receipt-tax-id" placeholder="ระบุเลข 13 หลัก">
-            </div>
-        </div>
-        <div class="modal-footer">
-            <div class="button-group">
-                <button type="button" id="cancel-receipt-settings-btn" style="background-color:var(--secondary-color)">ยกเลิก</button>
-                <button type="button" id="save-receipt-settings-btn" class="finish-sale">บันทึก</button>
             </div>
         </div>
     </div>
 </div>
 
+<div id="promotion-tooltip"></div>
+
+<div id="history-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-body" style="display: flex; flex-direction: column;"> <section class="card" style="height: 100%; box-shadow: none; border: none; padding: 0;"> <h2>ประวัติการขาย</h2> <div id="history-filter-section"> <div class="filter-group"> <label for="history-search-input">ค้นหาบิล / สินค้า</label> <div class="input-with-icon"> <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span> <input type="text" id="history-search-input" placeholder="รหัสการขาย หรือชื่อสินค้า..."> </div> </div> <div class="filter-group"> <label for="start-date">ช่วงวันที่และเวลา</label> <div style="display: flex; gap: 0.5rem; align-items: center;"> <input type="date" id="start-date" title="วันที่เริ่มต้น"> <input type="time" id="start-time" title="เวลาเริ่มต้น" style="width: 110px;"> <span style="color: var(--secondary-color);">-</span> <input type="date" id="end-date" title="วันที่สิ้นสุด"> <input type="time" id="end-time" title="เวลาสิ้นสุด" style="width: 110px;"> </div> </div> <div class="filter-group"> <div style="display: flex; gap: 0.5rem;"> <button type="button" id="filter-history-btn" style="width: 100%;">ค้นหา</button> <button type="button" id="today-history-btn" style="background-color: var(--info-color); width: 100%;">วันนี้</button> </div> </div> </div> <div class="button-group" style="justify-content: flex-start; margin-bottom: 1rem; margin-top:0;"> <button type="button" id="export-excel-btn">Export to Excel</button> <button type="button" id="clear-all-history-btn" class="clear-cart" style="flex-grow: 0; margin-left: auto;">ล้างประวัติทั้งหมด</button> </div> <div id="history-table-wrapper"> <table id="history-table"> <thead><tr><th>วันที่/เวลา</th><th>รหัสการขาย</th><th>รายการสินค้า (จำนวน)</th><th>ส่วนลด</th><th>ยอดรวมสุทธิ</th><th>การกระทำ</th></tr></thead> <tbody id="history-body"></tbody> </table> </div> </section> </div> <div class="modal-footer"> <button type="button" class="close-main-modal-btn" style="background-color: var(--secondary-color);">ปิด</button> </div> </div> </div>
+<div id="settings-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-body"> <section class="card" style="height: 100%; box-shadow: none; border: none; padding: 0;"> <h2>การตั้งค่าและจัดการ</h2> <div class="button-group"> <button type="button" id="manage-products-btn" style="background-color: var(--info-color);"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> จัดการสินค้า </button> <button type="button" id="import-from-sheet-btn" style="background-color: var(--success-color);"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg> นำเข้า/อัปเดตจาก Google Sheet </button> <button type="button" id="receipt-settings-btn" style="background-color: var(--secondary-color);"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> ตั้งค่าใบเสร็จ </button> </div> <div style="margin-top: 1rem; display: flex; align-items: center;"> <input type="checkbox" id="auto-import-toggle" style="width: auto; margin-right: 0.5rem;" checked> <label for="auto-import-toggle">นำเข้าข้อมูลอัตโนมัติเมื่อมีการเปลี่ยนแปลง (ตรวจสอบทุก 5 นาที)</label> </div> </section> </div> <div class="modal-footer"> <button type="button" class="close-main-modal-btn" style="background-color: var(--secondary-color);">ปิด</button> </div> </div> </div>
+<div id="receipt-settings-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"> <h3>ตั้งค่าข้อมูลใบเสร็จ</h3> </div> <div class="modal-body"> <div class="form-group"> <label for="receipt-store-name">ชื่อร้านค้า</label> <input type="text" id="receipt-store-name" placeholder="ระบุชื่อร้านค้าของคุณ"> </div> <div class="form-group"> <label for="receipt-address">ที่อยู่</label> <input type="text" id="receipt-address" placeholder="เช่น 123/45 ถนน ABC, แขวง/ตำบล XYZ..."> </div> <div class="form-group"> <label for="receipt-phone">เบอร์โทรศัพท์</label> <input type="text" id="receipt-phone" placeholder="เช่น 02-123-4567"> </div> <div class="form-group"> <label for="receipt-tax-id">เลขประจำตัวผู้เสียภาษี</label> <input type="text" id="receipt-tax-id" placeholder="ระบุเลข 13 หลัก"> </div> </div> <div class="modal-footer"> <div class="button-group"> <button type="button" id="cancel-receipt-settings-btn" style="background-color:var(--secondary-color)">ยกเลิก</button> <button type="button" id="save-receipt-settings-btn" class="finish-sale">บันทึก</button> </div> </div> </div> </div>
 <div id="payment-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"><h3>ชำระเงิน</h3></div> <div class="modal-body"> <div class="payment-modal-body"> <div class="payment-row"><span class="payment-label">ยอดสุทธิ</span><span class="payment-amount" id="payment-total-final">0.00</span></div> <div class="payment-row"><label for="cash-received-input" class="payment-label">รับเงินมา</label><input type="number" id="cash-received-input" step="any" placeholder="0.00"></div> <div class="payment-row"><span class="payment-label">เงินทอน</span><span class="payment-amount" id="payment-change">0.00</span></div> </div> </div> <div class="modal-footer"> <div class="button-group"> <button type="button" id="cancel-payment-btn" style="background-color:var(--secondary-color)">ยกเลิก (ESC)</button> <button type="button" id="confirm-sale-btn" class="finish-sale">ยืนยันการขาย (Enter)</button> </div> </div> </div> </div>
 <div id="delete-confirm-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"><h3 style="color:var(--danger-color)">ยืนยันการลบ</h3></div> <div class="modal-body"><p id="delete-confirm-text"></p></div> <div class="modal-footer"> <div class="button-group"> <button type="button" id="cancel-delete-btn" style="background-color:var(--secondary-color)">ยกเลิก</button> <button type="button" id="confirm-delete-btn" class="clear-cart">ยืนยันการลบ</button> </div> </div> </div> </div>
 <div id="clear-options-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"><h3>เลือกวิธีการล้างประวัติ</h3></div> <div class="modal-body"> <p>คุณต้องการล้างประวัติการขายแบบใด?</p> <div class="button-group" style="flex-direction: column; gap: 1rem;"> <button type="button" id="clear-local-btn" class="clear-cart" style="background-color: var(--info-color);">ล้างเฉพาะหน้าเว็บนี้</button> <button type="button" id="clear-db-btn" class="clear-cart">ล้างจากฐานข้อมูล (ถาวร)</button> </div> </div> <div class="modal-footer"> <button type="button" id="cancel-clear-btn" style="background-color: var(--secondary-color);">ยกเลิก</button> </div> </div> </div>
@@ -668,14 +615,9 @@
     const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-    // This will be true if the code is running in the intended environment
     if (typeof __firebase_config !== 'undefined' && __firebase_config) {
         firebaseConfig = JSON.parse(__firebase_config);
     } else {
-        // --- FALLBACK FOR LOCAL DEVELOPMENT ---
-        // IMPORTANT: Replace these placeholder values with your own Firebase project's configuration
-        // to run this file on your local computer. You can find these details in your
-        // Firebase project settings.
         console.warn("Firebase config not found in environment. Using local fallback. PLEASE REPLACE PLACEHOLDER VALUES.");
         firebaseConfig = {
             apiKey: "AIzaSyDOx9RPxrG-vO59QHjkhJtGmyDRhdoVFPY",
@@ -706,16 +648,16 @@
             } else {
                  console.log("No user is signed in. Attempting authentication...");
                  try {
-                         if (initialAuthToken) {
-                             await signInWithCustomToken(auth, initialAuthToken);
-                             console.log("Signed in with custom token.");
-                         } else {
-                             await signInAnonymously(auth);
-                             console.log("Signed in anonymously.");
-                         }
+                       if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                            console.log("Signed in with custom token.");
+                       } else {
+                            await signInAnonymously(auth);
+                            console.log("Signed in anonymously.");
+                       }
                  } catch (authError) {
-                         console.error("Firebase Authentication Failed:", authError);
-                         window.dispatchEvent(new CustomEvent('firebase-failed', { detail: authError }));
+                       console.error("Firebase Authentication Failed:", authError);
+                       window.dispatchEvent(new CustomEvent('firebase-failed', { detail: authError }));
                  }
             }
         });
@@ -729,7 +671,6 @@
 const POS_APP = {
     config: {
         googleSheetUrl: 'https://script.google.com/macros/s/AKfycbxmfug0KSRUqLMpDgb2LLbZRtdbOmj3P8gdmh1ZyL65aLB-wsmRQ6AJZRWSHdjGA3aZ/exec',
-        // [NEW] นำ Map กลับมาใช้
         thaiToEngMap: { 'ๅ': '1', '/': '2', '-': '3', 'ภ': '4', 'ถ': '5', 'ุ': '6', 'ึ': '7', 'ค': '8', 'ต': '9', 'จ': '0', 'ข': '-', 'ช': '=', 'ๆ': 'q', 'ไ': 'w', 'ำ': 'e', 'พ': 'r', 'ะ': 't', 'ั': 'y', 'ี': 'u', 'ร': 'i', 'น': 'o', 'ย': 'p', 'บ': '[', 'ล': ']', 'ฟ': 'a', 'ห': 's', 'ก': 'd', 'ด': 'f', 'เ': 'g', '้': 'h', '่': 'j', 'า': 'k', 'ส': 'l', 'ว': ';', 'ง': "'", 'ผ': 'z', 'ป': 'x', 'แ': 'c', 'อ': 'v', 'ิ': 'b', 'ท': 'n', 'ม': 'm', 'ใ': ',', 'ฝ': '.', 'ซ': '/' }
     },
     state: {
@@ -754,10 +695,7 @@ const POS_APP = {
         _costCalculationListener: null,
         productListPage: 1,
         productsPerPage: 10,
-        // [NEW] State for receipt settings
         receiptSettings: {},
-        // [REMOVED] Report state variables
-        // [NEW] State สำหรับตรวจจับการสแกน
         lastInputTimestamp: 0,
         isScanning: false,
         scanResetTimer: null,
@@ -788,9 +726,6 @@ const POS_APP = {
         this.startAutoImportPolling();
     },
 
-    // =================================================================
-    // == UI/VIEW MANAGEMENT LOGIC
-    // =================================================================
     setActiveOverlay(overlayName) {
         this.state.activeOverlay = overlayName;
         document.querySelectorAll('.sidebar-btn').forEach(btn => {
@@ -843,7 +778,6 @@ const POS_APP = {
         barcodeInput.addEventListener('input', this.handleInstantSearch.bind(this));
         barcodeInput.addEventListener('keydown', this.handleSearchKeyDown.bind(this));
         barcodeInput.addEventListener('keydown', this.detectKeyboardLayout.bind(this));
-        // [FIXED] เพิ่มการเรียกใช้ฟังก์ชันตรวจจับสแกนเนอร์กลับเข้ามา
         barcodeInput.addEventListener('keydown', this.detectScan.bind(this));
         
         document.getElementById('discount-input').addEventListener('input', this.updateCartOnInput.bind(this));
@@ -916,9 +850,6 @@ const POS_APP = {
         });
     },
     
-    // =================================================================
-    // == DATA & CORE LOGIC
-    // =================================================================
     clearDataOnStart() {
         this.state.salesHistory = [];
         this.state.tabs = new Map();
@@ -1573,7 +1504,7 @@ const POS_APP = {
         const existingProduct = cart.find(item => item.cartItemId === cartItemId); 
         if (existingProduct) { 
             existingProduct.quantity += quantityToAdd; 
-            delete existingProduct.priceOverride; // ล้าง override เมื่อเพิ่มของ
+            delete existingProduct.priceOverride;
         } else { 
             const newItem = { cartItemId: cartItemId, productUnit: productUnit, quantity: quantityToAdd }; 
             cart.push(newItem); 
@@ -1581,6 +1512,54 @@ const POS_APP = {
         this.updateCartDisplay(); 
     },
     
+    // [REMOVED] updatePromotionDisplay() function is no longer needed.
+
+    // [NEW] Functions to show and hide the promotion tooltip
+    showPromotionTooltip(event) {
+        const li = event.currentTarget;
+        const tooltip = document.getElementById('promotion-tooltip');
+        try {
+            const promotions = JSON.parse(li.dataset.promotions);
+            const productName = li.dataset.productName;
+
+            if (!promotions || promotions.length === 0) return;
+
+            let infoHtml = `<h4>โปรโมชั่นสำหรับ: ${this.escapeHtml(productName)}</h4><ul>`;
+            promotions.forEach(tier => {
+                infoHtml += `<li>ซื้อ <span class="highlight">${tier.quantity}</span> ชิ้น ราคา <span class="highlight">${tier.price}</span> บาท</li>`;
+            });
+            infoHtml += '</ul>';
+
+            tooltip.innerHTML = infoHtml;
+            tooltip.style.display = 'block';
+
+            // Position the tooltip near the cursor, but prevent it from going off-screen
+            const rect = li.getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
+            let top = event.clientY + 15;
+            let left = event.clientX + 10;
+            
+            if (top + tooltipRect.height > window.innerHeight) {
+                top = event.clientY - tooltipRect.height - 10;
+            }
+            if (left + tooltipRect.width > window.innerWidth) {
+                left = event.clientX - tooltipRect.width - 10;
+            }
+
+            tooltip.style.top = `${top}px`;
+            tooltip.style.left = `${left}px`;
+
+        } catch (e) {
+            console.error("Could not parse promotions data", e);
+            tooltip.style.display = 'none';
+        }
+    },
+
+    hidePromotionTooltip() {
+        document.getElementById('promotion-tooltip').style.display = 'none';
+    },
+
+
     updateCartDisplay() {
         const cart = this.getActiveCart();
         const discount = this.getActiveDiscount();
@@ -1590,6 +1569,9 @@ const POS_APP = {
         if (!cart) return;
         let subtotal = 0;
         cart.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.dataset.cartItemId = item.cartItemId;
+
             const { productUnit, quantity, priceOverride } = item;
             let totalForItem;
             let pricePerUnit;
@@ -1602,8 +1584,18 @@ const POS_APP = {
                 pricePerUnit = quantity > 0 ? totalForItem / quantity : 0;
             }
             subtotal += totalForItem;
+            
+            // [MODIFIED] Check for promotions and add listeners
+            const promotions = productUnit?.pricingUnit?.priceTiers?.filter(tier => tier.quantity > 1);
+            if (promotions && promotions.length > 0) {
+                li.classList.add('has-promotion');
+                li.dataset.promotions = JSON.stringify(promotions);
+                li.dataset.productName = productUnit.display;
+                li.addEventListener('mouseenter', this.showPromotionTooltip.bind(this));
+                li.addEventListener('mouseleave', this.hidePromotionTooltip.bind(this));
+            }
 
-            const li = document.createElement('li');
+
             if (quantity > 1) {
                 li.classList.add('highlight-quantity');
             }
@@ -1612,12 +1604,14 @@ const POS_APP = {
             if (!this.state.isRestrictedMode) {
                 itemInfoHTML += ` <span class="sub-text">(คงเหลือ: ${stockInThisUnit.toFixed(2)} ${productUnit.pricingUnit.unitName})(ต้นทุน: ${(productUnit.pricingUnit.cost || 0).toFixed(2)})</span>`;
             }
-            li.innerHTML = `<div class="col-seq">${index + 1}</div><div class="col-name">${itemInfoHTML}</div><div class="col-qty"><input type="number" class="item-input" value="${quantity}" onchange="POS_APP.editItemQuantity(${index}, this.value)" onfocus="this.select()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('discount-input').focus(); document.getElementById('discount-input').select(); }"></div><div class="col-price"><input type="text" class="item-input" value="${pricePerUnit.toFixed(2)}" disabled></div><div class="col-total"><input type="text" class="item-input" value="${totalForItem.toFixed(2)}" onchange="POS_APP.editItemTotal(${index}, this.value)" onfocus="this.select()"></div><div class="col-delete"><button type="button" class="delete-item-btn" onclick="POS_APP.deleteItemFromCart(${index})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></div>`;
+            li.innerHTML = `<div class="col-seq">${index + 1}</div><div class="col-name">${itemInfoHTML}</div><div class="col-qty"><input type="number" class="item-input" value="${quantity}" onchange="POS_APP.editItemQuantity(${index}, this.value)" onfocus="this.select()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('discount-input').focus(); document.getElementById('discount-input').select(); }"></div><div class="col-price"><input type="text" class="item-input" value="${pricePerUnit.toFixed(2)}" disabled></div><div class="col-total"><input type="text" class="item-input" value="${totalForItem.toFixed(2)}" onchange="POS_APP.editItemTotal(${index}, this.value)" onfocus="this.select()"></div><div class="col-delete"><button type="button" class="delete-item-btn" onclick="POS_APP.deleteItemFromCart(${index})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></div>`;
             cartItemsElement.appendChild(li);
         });
         const total = subtotal - (discount || 0);
         document.getElementById('cart-subtotal').textContent = subtotal.toFixed(2);
         document.getElementById('cart-total').textContent = total.toFixed(2);
+        
+        // [REMOVED] Call to the old updatePromotionDisplay() is removed.
     },
 
     editItemTotal(index, newTotalValue) {
@@ -2075,21 +2069,21 @@ const POS_APP = {
                 </table>
 
                 <table class="items-table">
-                      <thead>
-                        <tr>
-                            <th>รายการ</th>
-                            <th>จำนวน</th>
-                            <th>ราคา</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${itemsHtml}
-                    </tbody>
+                        <thead>
+                                <tr>
+                                    <th>รายการ</th>
+                                    <th>จำนวน</th>
+                                    <th>ราคา</th>
+                                </tr>
+                </thead>
+                <tbody>
+                    ${itemsHtml}
+                </tbody>
                 </table>
                 
                 <div class="summary-section">
                     <table class="summary-table">
-                           <tr>
+                            <tr>
                                 <td>รวมเป็นเงิน</td>
                                 <td>${saleRecord.subtotal.toFixed(2)}</td>
                             </tr>
@@ -2457,7 +2451,6 @@ filterHistoryByDateTime() {
         XLSX.writeFile(workbook, `pos-history-base-units-${new Date().toISOString().split('T')[0]}.xlsx`);
     },
 
-    // --- [NEW] Receipt Settings Logic ---
     async loadReceiptSettings() {
         const { api } = window.firebaseServices;
         const docRef = this.getReceiptSettingsDocRef();
