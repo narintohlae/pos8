@@ -406,11 +406,51 @@
         flex-shrink: 0;
         gap: 0.5rem;
     }
+
+    /* [NEW] Wrapper for tabs and the add button */
+    #cart-tabs-wrapper {
+        display: flex;
+        align-items: center;
+        flex-grow: 1;
+        overflow: hidden; /* Hide overflowing tabs */
+    }
+
     #cart-tabs { display: flex; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
     .tab-button { padding: 0.7rem 1.1rem; cursor: pointer; background-color: transparent; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; font-size: 0.95em; color: var(--secondary-color); position: relative; flex-shrink: 0; transition: color 0.3s, border-color 0.3s; }
     .tab-button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); font-weight: bold; }
     .close-tab-btn { background: none; border: none; color: inherit; font-size: 1.2em; padding: 0 0 0 0.6rem; line-height: 1; opacity: 0.5; border-radius: 50%; }
     .close-tab-btn:hover { opacity: 1; background-color: rgba(0,0,0,0.1); }
+    
+    /* [NEW] Styles for the "Add New Tab" button */
+    #add-new-tab-btn {
+        background-color: #e9ecef;
+        border: 1px solid transparent;
+        color: var(--secondary-color);
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        padding: 0;
+        margin-left: 0.5rem;
+        transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        margin-bottom: -2px; /* Align with tabs */
+    }
+    #add-new-tab-btn:hover {
+        background-color: var(--primary-color);
+        color: var(--white-color);
+        border-color: var(--primary-color);
+        filter: brightness(100%);
+    }
+    #add-new-tab-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
     #product-mgmt-modal .modal-content, #history-modal .modal-content, #settings-modal .modal-content { max-width: 95vw; width: 1400px; height: 95vh; }
     .modal-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); }
     .modal-toolbar h2 { margin: 0; border: none; font-size: 1.4rem; }
@@ -555,7 +595,12 @@
     <div class="cart-column">
         <div class="card">
             <div class="cart-tabs-container">
-                <div id="cart-tabs"></div>
+                <div id="cart-tabs-wrapper">
+                    <div id="cart-tabs"></div>
+                    <button type="button" id="add-new-tab-btn" title="เพิ่มบิลใหม่ (F2)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+                </div>
                 <aside id="app-sidebar">
                     <button class="sidebar-btn" data-view="history">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"></path><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
@@ -761,6 +806,9 @@ const POS_APP = {
             if (view === 'history') this.showHistoryModal();
             else if (view === 'settings') this.showSettingsModal();
         });
+
+        // [NEW] Event listener for the "Add Tab" button
+        document.getElementById('add-new-tab-btn').addEventListener('click', () => this.addNewSaleTab());
 
         document.querySelectorAll('.close-main-modal-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -1512,8 +1560,6 @@ const POS_APP = {
         this.updateCartDisplay(); 
     },
     
-    // [REMOVED] updatePromotionDisplay() function is no longer needed.
-
     // [NEW] Functions to show and hide the promotion tooltip
     showPromotionTooltip(event) {
         const li = event.currentTarget;
@@ -1611,7 +1657,6 @@ const POS_APP = {
         document.getElementById('cart-subtotal').textContent = subtotal.toFixed(2);
         document.getElementById('cart-total').textContent = total.toFixed(2);
         
-        // [REMOVED] Call to the old updatePromotionDisplay() is removed.
     },
 
     editItemTotal(index, newTotalValue) {
