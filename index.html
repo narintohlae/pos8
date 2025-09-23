@@ -824,6 +824,7 @@ const POS_APP = {
         document.getElementById('import-from-sheet-btn').addEventListener('click', () => this.importFromGoogleSheet(false));
         const barcodeInput = document.getElementById('barcode-input');
         barcodeInput.addEventListener('input', this.handleInstantSearch.bind(this));
+        document.getElementById('cart-items').addEventListener('mouseleave', this.hidePromotionTooltip.bind(this));
         barcodeInput.addEventListener('keydown', this.handleSearchKeyDown.bind(this));
         barcodeInput.addEventListener('keydown', this.detectKeyboardLayout.bind(this));
         barcodeInput.addEventListener('keydown', this.detectScan.bind(this));
