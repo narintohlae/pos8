@@ -561,6 +561,33 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* -----------------------------
+   Highlight ไล่สีตามจำนวน
+------------------------------*/
+#cart-items li[data-qty="1"] { background-color: rgba(255,193,7,0.15); }
+#cart-items li[data-qty="2"] { background-color: rgba(255,193,7,0.25); }
+#cart-items li[data-qty="3"] { background-color: rgba(255,193,7,0.35); }
+#cart-items li[data-qty="4"] { background-color: rgba(255,193,7,0.45); }
+#cart-items li[data-qty="5"] { background-color: rgba(255,193,7,0.55); }
+#cart-items li[data-qty="6"] { background-color: rgba(255,193,7,0.65); }
+
+/* -----------------------------
+   Responsive Compact Mobile
+------------------------------*/
+@media (max-width: 576px) {
+    .cart-header-row {
+        grid-template-columns: 25px 2fr 1fr 1fr;
+    }
+    #cart-items li {
+        grid-template-columns: 25px 2fr 1fr 1fr;
+    }
+    .cart-header-row .col-price,
+    #cart-items .col-price {
+        display: none;
+    }
+}
+
 </style>
 </head>
 <body>
@@ -713,6 +740,12 @@
     }
 </script>
 <script>
+
+// [ADDED] Highlight ตามจำนวน
+function updateCartHighlight(li, qty) {
+    if (li) li.setAttribute("data-qty", qty);
+}
+
 const POS_APP = {
     config: {
         googleSheetUrl: 'https://script.google.com/macros/s/AKfycbxmfug0KSRUqLMpDgb2LLbZRtdbOmj3P8gdmh1ZyL65aLB-wsmRQ6AJZRWSHdjGA3aZ/exec',
@@ -746,6 +779,20 @@ const POS_APP = {
         scanResetTimer: null,
     },
 
+    renderCartItemElement(item) {
+        const li = document.createElement('li');
+        li.classList.add('cart-item-row');
+        li.innerHTML = `
+            <span class="col-seq"></span>
+            <span class="col-name">${item.name}</span>
+            <span class="col-qty">${item.qty}</span>
+            <span class="col-price">${item.price}</span>
+            <span class="col-total">${(item.qty * item.price).toFixed(2)}</span>
+            <span class="col-delete"><button class="delete-item-btn">x</button></span>
+        `;
+        updateCartHighlight(li, item.qty);
+        return li;
+    },
     init() {
         window.addEventListener('firebase-ready', () => this.start());
         window.addEventListener('firebase-failed', (event) => {
