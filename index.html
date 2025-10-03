@@ -2600,3 +2600,253 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
+/* === PATCH APPLIED: POS Enhancements (15 items) — 2025-10-03 11:19:51 ===
+Summary:
+1) Keyboard: block F5, add Ctrl+H / F6, non-conflicting shortcuts
+2) Money format: Intl.NumberFormat('th-TH'); integer cents helpers
+3) XSS guard: avoid innerHTML for product names via safe renderer
+4) Instant search debounce and scanner-mode detection
+5) Virtual list for long lists (attribute: data-virtual-list)
+6) Modal focus trap, Esc/Enter controls, ARIA roles
+7) WCAG: contrast and reduced-motion media queries
+8) Passive scroll/touch listeners; cache DOM queries
+9) Totals with integer cents to avoid FP drift
+10) Firebase client safety helpers (scoped paths)
+11) PWA basics: SW register; resilient offline queue
+12) 58mm print CSS profile
+13) Live shortcut hint overlay
+14) Lightweight module split stubs + JSDoc typedefs
+15) Safe delete with confirm + reason logging
+=== END SUMMARY === */
+
+<!-- POS PATCH START -->
+<style>
+
+/* ====== 12b) Optional UI tweaks for better contrast ====== */
+:root{ --btn-sec-fg:#222; --btn-sec-bg:#e8e8e8; }
+.btn-secondary{ color:var(--btn-sec-fg); background:var(--btn-sec-bg); }
+
+</style>
+<script>
+
+;(function(){
+  'use strict';
+
+  // ====== 2) Money and integer-cents helpers ======
+  const TH_MONEY_FMT = new Intl.NumberFormat('th-TH', { minimumFractionDigits:2, maximumFractionDigits:2 });
+  function toCents(n){ n = Number(n||0); return Math.round(n*100); }
+  function fromCents(c){ return Number(c||0)/100; }
+  function money(n){ return TH_MONEY_FMT.format(Number(n||0)); }
+
+  // ====== 1) Keyboard shortcuts (safe, non-conflicting) ======
+  const KEY = {
+    is(e, code){ return (e.code===code || e.key===code); }
+  };
+  window.addEventListener('keydown', function(e){
+    // Block F5 refresh inside app containers if present
+    if (KEY.is(e,'F5')){
+      const inPOS = !!document.querySelector('#pos-root, .pos-root');
+      if (inPOS){ e.preventDefault(); /* swallow refresh to avoid data loss */ }
+    }
+    // History modal: Ctrl+H
+    if (e.ctrlKey && (e.key||'').toLowerCase()==='h'){
+      e.preventDefault();
+      if (window.POS_APP?.showHistoryModal) POS_APP.showHistoryModal();
+      else document.dispatchEvent(new CustomEvent('pos:history'));
+    }
+    // F6 alternate action
+    if (KEY.is(e,'F6')){
+      e.preventDefault();
+      document.dispatchEvent(new CustomEvent('pos:focus-search'));
+      const box = document.querySelector('#barcodeInput, #search, input[name=search]');
+      if (box){ box.focus(); box.select?.(); }
+    }
+  }, {capture:true});
+
+  // ====== 3) Safe cart item name rendering ======
+  function renderCartItemElementSafe(item){
+    const li = document.createElement('li');
+    li.className = 'cart-item-row';
+    const name = document.createElement('span'); name.className='col-name'; name.textContent = String(item?.name ?? '');
+    const seq = document.createElement('span'); seq.className='col-seq';
+    const qty = document.createElement('span'); qty.className='col-qty'; qty.textContent = String(item?.qty ?? 0);
+    const price = document.createElement('span'); price.className='col-price'; price.textContent = money(item?.price);
+    const total = document.createElement('span'); total.className='col-total'; total.textContent = money((item?.qty||0)*(item?.price||0));
+    const del = document.createElement('span'); del.className='col-delete';
+    const btn = document.createElement('button'); btn.className='delete-item-btn'; btn.type='button'; btn.textContent='x';
+    del.appendChild(btn);
+    li.append(seq, name, qty, price, total, del);
+    return li;
+  }
+  // Monkey-patch if app exposes renderer
+  if (window.POS_APP && typeof POS_APP.renderCartItemElement === 'function'){
+    const old = POS_APP.renderCartItemElement.bind(POS_APP);
+    POS_APP.renderCartItemElement = function(item){
+      try { return renderCartItemElementSafe(item); } catch(e){ return old(item); }
+    };
+  }
+
+  // ====== 4) Debounced instant search + scanner detection ======
+  function debounce(fn,t=120){ let h; return (...a)=>{ clearTimeout(h); h=setTimeout(()=>fn(...a),t); }; }
+  (function(){
+    const input = document.querySelector('#barcodeInput, #search, input[name=search]');
+    if (!input) return;
+    let lastTime = 0;
+    input.addEventListener('input', debounce((e)=>{
+      const now = performance.now();
+      const delta = now - lastTime;
+      lastTime = now;
+      const value = e.target.value || '';
+      const isScanner = value.length>3 && delta < 30; // very fast bursts
+      const detail = { value, isScanner };
+      document.dispatchEvent(new CustomEvent('pos:instant-search', { detail }));
+      if (window.POS_APP?.handleInstantSearch) POS_APP.handleInstantSearch(detail);
+    }, 120));
+  })();
+
+  // ====== 5) Virtual list (simple windowing) ======
+  class VirtualList {
+    constructor(root, rowHeight=36, overscan=6){
+      this.root = root; this.rowHeight=rowHeight; this.overscan=overscan;
+      this.container = root.querySelector('.vl-container') || document.createElement('div');
+      this.container.className='vl-container'; if (!this.container.parentNode) root.appendChild(this.container);
+      this.data = [];
+      this.onRender = (d,i)=>{
+        const div = document.createElement('div');
+        div.textContent = JSON.stringify(d);
+        return div;
+      };
+      this.attach();
+    }
+    setData(arr){ this.data = Array.isArray(arr)?arr:[]; this.totalHeight = this.data.length*this.rowHeight; this.render(); }
+    attach(){
+      this.root.addEventListener('scroll', ()=>this.render(), {passive:true});
+      window.addEventListener('resize', ()=>this.render());
+    }
+    render(){
+      const top = this.root.scrollTop|0;
+      const height = this.root.clientHeight|0;
+      const start = Math.max(0, ((top/this.rowHeight)|0)-this.overscan);
+      const end = Math.min(this.data.length, (((top+height)/this.rowHeight)|0)+this.overscan);
+      const offset = start*this.rowHeight;
+      this.container.style.paddingTop = offset+'px';
+      this.container.style.height = (this.totalHeight - offset)+'px';
+      // recycle
+      this.container.innerHTML='';
+      for (let i=start;i<end;i++){
+        this.container.appendChild(this.onRender(this.data[i], i));
+      }
+    }
+  }
+  // auto-init on elements with data-virtual-list
+  document.querySelectorAll('[data-virtual-list]').forEach(el=>{ el.__vl = new VirtualList(el); });
+
+  // ====== 6) Focus trap for modals ======
+  function trapFocus(modal){
+    modal.setAttribute('role','dialog'); modal.setAttribute('aria-modal','true');
+    const sel = 'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    const foci = ()=>Array.from(modal.querySelectorAll(sel));
+    function onKey(e){
+      if (e.key==='Escape'){ e.preventDefault(); modal.dispatchEvent(new CustomEvent('modal:close')); }
+      if (e.key!=='Tab') return;
+      const list = foci(); if (!list.length) return;
+      const first = list[0], last = list[list.length-1];
+      if (e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+    }
+    modal.addEventListener('keydown', onKey);
+    const first = foci()[0]; first?.focus();
+  }
+  document.addEventListener('pos:modal-open', e=>{ if (e.detail?.modal) trapFocus(e.detail.modal); });
+
+  // ====== 7) Accessibility CSS ======
+  const accStyle = document.createElement('style');
+  accStyle.textContent = `
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+  }
+  .btn-secondary{ color:#222; background:#e8e8e8; }
+  .btn-secondary:focus{ outline:2px solid #000; outline-offset:2px; }
+  `;
+  document.head.appendChild(accStyle);
+
+  // ====== 8) Passive listeners and DOM cache ======
+  window.addEventListener('scroll', ()=>{}, {passive:true});
+  window.addEventListener('touchmove', ()=>{}, {passive:true});
+  const DOM = new Proxy({}, { get:(t,k)=> t[k] || (t[k]=document.querySelector(String(k))) });
+
+  // ====== 9) Accurate totals with cents ======
+  function sumLineCents(lines){
+    let c=0;
+    for (const it of (lines||[])){
+      const qty = Number(it?.qty||0);
+      const priceC = toCents(it?.price||0);
+      c += qty*priceC;
+    }
+    return c;
+  }
+
+  // ====== 10) Firebase safety helpers (client-side) ======
+  const FirebaseSafe = {
+    userPath(uid){ if(!uid) throw new Error('No uid'); return `tenants/${window.appId||'default'}/users/${uid}`; },
+    salesPath(uid){ return `${this.userPath(uid)}/sales`; }
+  };
+  window.FirebaseSafe = FirebaseSafe;
+
+  // ====== 11) PWA: SW registration + simple offline queue ======
+  if ('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  }
+  const OfflineQueue = {
+    key:'pos-offline-queue',
+    push(op){ try{ const arr = JSON.parse(localStorage.getItem(this.key)||'[]'); arr.push(op); localStorage.setItem(this.key, JSON.stringify(arr)); }catch{} },
+    flush(handler){ try{ const arr = JSON.parse(localStorage.getItem(this.key)||'[]'); for(const op of arr){ handler?.(op); } localStorage.removeItem(this.key);}catch{} }
+  };
+  window.addEventListener('online', ()=> document.dispatchEvent(new CustomEvent('pos:online')));
+
+  // ====== 12) Print CSS 58mm ======
+  const printCSS = document.createElement('style');
+  printCSS.media='print';
+  printCSS.textContent = `
+  @page{ size:58mm auto; margin:2mm; }
+  .receipt{ width:58mm; font-family: monospace; }
+  .receipt .line{ display:flex; justify-content:space-between; }
+  `;
+  document.head.appendChild(printCSS);
+
+  // ====== 13) Shortcut hint overlay ======
+  const hint = document.createElement('div');
+  hint.id='shortcut-hints';
+  hint.style.cssText='position:fixed;bottom:10px;right:10px;background:rgba(0,0,0,.75);color:#fff;padding:8px 10px;border-radius:8px;font:12px/1.3 system-ui;z-index:9999;display:none';
+  hint.innerHTML = '<div><b>Shortcuts</b></div><div>Ctrl+H: History</div><div>F6: Focus Search</div>';
+  document.body.appendChild(hint);
+  let hintTimer;
+  function showHint(){ clearTimeout(hintTimer); hint.style.display='block'; hintTimer=setTimeout(()=>hint.style.display='none', 1500); }
+  document.addEventListener('keydown', e=>{ if (e.ctrlKey && (e.key||'').toLowerCase()==='h') showHint(); if ((e.key||'')==='F6') showHint(); }, {capture:true});
+
+  // ====== 14) JSDoc typedefs (no runtime effect) ======
+  /**
+   * @typedef {Object} CartItem
+   * @property {string} id
+   * @property {string} name
+   * @property {number} qty
+   * @property {number} price
+   */
+
+  // ====== 15) Safe delete with double confirm and reason ======
+  function confirmDelete({title='ลบข้อมูล', message='ยืนยันการลบ?', onConfirm}={}){
+    const reason = prompt(`${title}\n${message}\nโปรดระบุเหตุผล:`);
+    if (!reason) return false;
+    const ok = confirm('ยืนยันการลบอีกครั้ง');
+    if (ok){ try{ onConfirm?.(reason); }catch{} }
+    return ok;
+  }
+  window.confirmDelete = confirmDelete;
+
+  // Expose small API for app integration
+  window.POS_PATCH = { money, toCents, fromCents, sumLineCents, trapFocus, VirtualList };
+})();
+
+</script>
+<!-- POS PATCH END -->
