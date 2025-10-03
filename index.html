@@ -777,6 +777,11 @@ const POS_APP = {
         lastInputTimestamp: 0,
         isScanning: false,
         scanResetTimer: null,
+        // [Added] Scanner buffering
+        scanBuffer: '',
+        lastScanTs: 0,
+        _swallowEnterOnce: false,
+
     },
 
     renderCartItemElement(item) {
@@ -804,6 +809,8 @@ const POS_APP = {
     async start() {
         console.log("Initializing main application logic...");
         const barcodeInput = document.getElementById('barcode-input');
+                // [Added #4] First-capture scanner keystrokes
+        barcodeInput.addEventListener('keydown', this.handleKeyForScan.bind(this));
         if (barcodeInput) this.state.basePlaceholder = barcodeInput.getAttribute('data-base-placeholder');
         this.updatePlaceholderHint();
         this.clearDataOnStart();
@@ -830,18 +837,22 @@ const POS_APP = {
 
     showHistoryModal() {
         document.getElementById('history-modal').style.display = 'flex';
+                this.trapFocus('history-modal');
         this.setActiveOverlay('history');
     },
     hideHistoryModal() {
         document.getElementById('history-modal').style.display = 'none';
+                this.releaseFocusTrap();
         this.setActiveOverlay(null);
     },
     showSettingsModal() {
         document.getElementById('settings-modal').style.display = 'flex';
+                this.trapFocus('settings-modal');
         this.setActiveOverlay('settings');
     },
     hideSettingsModal() {
         document.getElementById('settings-modal').style.display = 'none';
+                this.releaseFocusTrap();
         this.setActiveOverlay(null);
     },
     
@@ -1319,11 +1330,15 @@ const POS_APP = {
     },
     showProductMgmtModal() { 
         document.getElementById('product-mgmt-modal').style.display = 'flex'; 
+                this.trapFocus('product-mgmt-modal');
         document.getElementById('product-search-input').value = ''; 
         this.state.productListPage = 1;
         this.renderProductList(); 
     },
-    hideProductMgmtModal() { document.getElementById('product-mgmt-modal').style.display = 'none'; },
+    hideProductMgmtModal() { 
+        document.getElementById('product-mgmt-modal').style.display = 'none'; 
+        this.releaseFocusTrap(); 
+    },
     showProductEditorModal(product = null) {
         this.state.currentEditingProductId = product ? product.id : null;
         const form = document.getElementById('product-editor-form');
@@ -1344,6 +1359,7 @@ const POS_APP = {
             this.addPricingUnitRow(); 
         }
         document.getElementById('product-editor-modal').style.display = 'flex';
+                this.trapFocus('product-editor-modal');
         const container = document.getElementById('pricing-units-container');
         if (this.state._costCalculationListener) {
             container.removeEventListener('input', this.state._costCalculationListener);
@@ -1379,7 +1395,10 @@ const POS_APP = {
         };
         container.addEventListener('input', this.state._costCalculationListener);
     },
-    hideProductEditorModal() { document.getElementById('product-editor-modal').style.display = 'none'; },
+    hideProductEditorModal() { 
+        document.getElementById('product-editor-modal').style.display = 'none'; 
+        this.releaseFocusTrap(); 
+    },
     renderProductList(filterText = '') {
         const container = document.getElementById('product-list-container');
         const lowercasedFilter = filterText.toLowerCase().trim();
@@ -1496,6 +1515,125 @@ const POS_APP = {
         this.state.scanResetTimer = setTimeout(() => {
             this.state.isScanning = false;
         }, 100);
+    },
+    // [Added #4] Robust barcode scanner handler with time-threshold buffer
+    handleKeyForScan(e) {
+        try {
+            const now = Date.now();
+            const GAP = 25; // ms threshold to tell scanner vs human typing
+            if (typeof this.state.lastScanTs !== 'number') this.state.lastScanTs = 0;
+            if (typeof this.state.scanBuffer !== 'string') this.state.scanBuffer = '';
+
+            if (e.key === 'Enter') {
+                if (this.state.scanBuffer && (now - this.state.lastScanTs) < 2 * GAP) {
+                    e.preventDefault();
+                    this.state._swallowEnterOnce = true;
+                    const code = this.state.scanBuffer;
+                    this.state.scanBuffer = '';
+                    this.onBarcodeScanned(code);
+                    return;
+                }
+                return;
+            }
+
+            if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+            if (e.key && e.key.length === 1) {
+                const delta = now - this.state.lastScanTs;
+                if (delta < GAP) {
+                    this.state.scanBuffer += e.key;
+                    e.preventDefault();
+                } else {
+                    this.state.scanBuffer = e.key;
+                }
+                this.state.lastScanTs = now;
+            }
+        } catch (err) {
+            console.warn('handleKeyForScan error', err);
+        }
+    },
+
+    // [Added #4] What to do when a barcode is scanned
+    onBarcodeScanned(rawCode) {
+        const code = String(rawCode || '').trim().toLowerCase();
+        if (!code) return;
+        const unit = this.state.searchableProductUnits.find(p =>
+            (p.barcode && p.barcode.toLowerCase() === code) ||
+            (p.productCode && p.productCode.toLowerCase() === code)
+        );
+        if (unit) {
+            this.addToCart(unit, 1);
+            const input = document.getElementById('barcode-input');
+            if (input) input.value = '';
+            this.state.currentSearchResults = [];
+            this.state.selectedSearchIndex = -1;
+            this.displaySearchResults([], '');
+            this.toggleUIVisibility();
+        } else {
+            const input = document.getElementById('barcode-input');
+            if (input) {
+                input.value = rawCode;
+                this.handleInstantSearch({ target: input });
+            }
+        }
+    },
+
+    // [Added #5] Focus trap & ESC-to-close for modals
+    trapFocus(modalEl) {
+        const modal = typeof modalEl === 'string' ? document.getElementById(modalEl) : modalEl;
+        if (!modal) return;
+
+        const getFocusables = () => modal.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
+        const focusables = getFocusables();
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+
+        if (this.state.activeModalCloseHandler) {
+            document.removeEventListener('keydown', this.state.activeModalCloseHandler);
+        }
+
+        const handler = (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                this.hideAnyOpenModal();
+                return;
+            }
+            if (e.key !== 'Tab' || focusables.length === 0) return;
+
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        };
+
+        this.state.activeModalCloseHandler = handler;
+        document.addEventListener('keydown', handler);
+
+        if (first) first.focus();
+    },
+
+    // Remove focus trap
+    releaseFocusTrap() {
+        if (this.state.activeModalCloseHandler) {
+            document.removeEventListener('keydown', this.state.activeModalCloseHandler);
+            this.state.activeModalCloseHandler = null;
+        }
+    },
+
+    // Utility: close whichever modal is open (called on ESC)
+    hideAnyOpenModal() {
+        if (document.getElementById('payment-modal')?.style.display === 'flex') { this.hidePaymentModal(); return; }
+        if (document.getElementById('delete-confirm-modal')?.style.display === 'flex') { this.hideDeleteConfirmModal(); return; }
+        if (document.getElementById('clear-options-modal')?.style.display === 'flex') { this.hideClearOptionsModal(); return; }
+        if (document.getElementById('product-mgmt-modal')?.style.display === 'flex') { this.hideProductMgmtModal(); return; }
+        if (document.getElementById('product-editor-modal')?.style.display === 'flex') { this.hideProductEditorModal(); return; }
+        if (document.getElementById('history-modal')?.style.display === 'flex') { this.hideHistoryModal(); return; }
+        if (document.getElementById('settings-modal')?.style.display === 'flex') { this.hideSettingsModal(); return; }
+        if (document.getElementById('receipt-settings-modal')?.style.display === 'flex') { this.hideReceiptSettingsModal(); return; }
+        if (document.getElementById('info-modal')?.style.display === 'flex') { this.hideInfoModal(); return; }
     },
 
     handleInstantSearch(e) {
@@ -1762,6 +1900,8 @@ const POS_APP = {
         } 
     },
     handleSearchKeyDown(e) {
+                // [Added #4] Skip default handler if Enter was already handled by scanner logic
+        if (this.state._swallowEnterOnce) { this.state._swallowEnterOnce = false; return; }
         if (e.key === 'Enter') {
             e.preventDefault();
             const inputValue = document.getElementById('barcode-input').value.trim();
@@ -1920,6 +2060,7 @@ const POS_APP = {
         confirmText.textContent = `คุณแน่ใจหรือไม่ว่าต้องการล้างตะกร้าสินค้าทั้งหมด?`; 
         confirmBtn.onclick = () => { this.clearCart(); this.hideDeleteConfirmModal(); }; 
         document.getElementById('delete-confirm-modal').style.display = 'flex'; 
+                this.trapFocus('delete-confirm-modal');
         confirmBtn.focus(); 
     },
     updateCartOnInput(){ 
@@ -1938,10 +2079,12 @@ const POS_APP = {
         const cashInput = document.getElementById('cash-received-input'); 
         cashInput.value = ''; 
         document.getElementById('payment-modal').style.display = 'flex'; 
+                this.trapFocus('payment-modal');
         cashInput.focus(); 
     },
     hidePaymentModal() { 
         document.getElementById('payment-modal').style.display = 'none'; 
+                this.releaseFocusTrap();
         document.getElementById('barcode-input').focus(); 
     },
     calculateChange() { 
@@ -2261,9 +2404,13 @@ const POS_APP = {
             confirmBtn.onclick = () => this.executeDeleteSaleFromHistory(id); 
         } 
         document.getElementById('delete-confirm-modal').style.display = 'flex'; 
+                this.trapFocus('delete-confirm-modal');
         setTimeout(() => confirmBtn.focus(), 50); 
     },
-    hideDeleteConfirmModal() { document.getElementById('delete-confirm-modal').style.display = 'none'; },
+    hideDeleteConfirmModal() { 
+        document.getElementById('delete-confirm-modal').style.display = 'none'; 
+        this.releaseFocusTrap(); 
+    },
     async executeDeleteSaleFromHistory(firestoreId) { 
         const {api, db} = window.firebaseServices; 
         const docRef = api.doc(db, this.getSalesHistoryCollectionRef().path, firestoreId); 
@@ -2277,7 +2424,10 @@ const POS_APP = {
         } 
     },
     showClearOptionsModal() { document.getElementById('clear-options-modal').style.display = 'flex'; },
-    hideClearOptionsModal() { document.getElementById('clear-options-modal').style.display = 'none'; },
+    hideClearOptionsModal() { 
+        document.getElementById('clear-options-modal').style.display = 'none'; 
+        this.releaseFocusTrap(); 
+    },
     clearHistoryLocally() { 
         this.state.salesHistory = []; 
         this.updateHistoryDisplay(); 
@@ -2585,10 +2735,12 @@ filterHistoryByDateTime() {
         document.getElementById('receipt-phone').value = phone || '';
         document.getElementById('receipt-tax-id').value = taxId || '';
         document.getElementById('receipt-settings-modal').style.display = 'flex';
-    },
+            this.trapFocus('receipt-settings-modal');
+        },
     hideReceiptSettingsModal() {
         document.getElementById('receipt-settings-modal').style.display = 'none';
-    },
+            this.releaseFocusTrap();
+        },
 
 };
 
