@@ -2850,3 +2850,94 @@ Summary:
 
 </script>
 <!-- POS PATCH END -->
+
+// === Scanner lock to avoid partial reads ===
+let __scannerLocked = false;
+let __scannerBuffer = '';
+function startScannerLock() { __scannerLocked = true; __scannerBuffer = ''; }
+function releaseScannerLockOnNewline(ch) {
+  if (!__scannerLocked) return false;
+  __scannerBuffer += ch;
+  if (ch === '\n' || ch === '\r') { __scannerLocked = false; return true; }
+  return false;
+}
+
+// === Ranking with weights and simple fuzzy ===
+function levenshtein(a,b){ const m=[...Array(b.length+1)].map((_,i)=>[i]); for(let i=0;i<=a.length;i++) m[0][i]=i;
+  for(let i=1;i<=b.length;i++){ for(let j=1;j<=a.length;j++){ const cost=a[j-1]===b[i-1]?0:1;
+    m[i][j]=Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+cost);} } return m[b.length][a.length]; }
+function norm(s){ return String(s||'').trim().toLowerCase(); }
+function rankResults(query, items){
+  const q = norm(query);
+  if(!q) return items;
+  return items.map(p=>{
+    const name = norm(p.name);
+    const code = norm(p.code || p.sku);
+    const barcode = norm(p.barcode);
+    let score = 0;
+    if (barcode && barcode === q) score += 1000;
+    if (code && code === q) score += 400;
+    if (name.includes(q)) score += 200;
+    // fuzzy for small typos
+    const lv = Math.min(levenshtein(name, q), levenshtein(code||'', q));
+    score += Math.max(0, 120 - 40*lv);
+    return { ...p, score };
+  }).sort((a,b)=>b.score-a.score);
+}
+
+// === Currency format helper (THB) ===
+const __thbFmt = new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function formatTHB(n){ const x = Number(n||0); return __thbFmt.format(x); }
+
+// === Keyboard shortcuts and focus trap ===
+const __shortcuts = new Map();
+function registerShortcut(combo, handler){ __shortcuts.set(combo.toLowerCase(), handler); }
+document.addEventListener('keydown', e=>{
+  const combo = [e.ctrlKey?'Ctrl':'', e.shiftKey?'Shift':'', e.altKey?'Alt':'', e.key].filter(Boolean).join('+').toLowerCase();
+  if(__shortcuts.has(combo)){ e.preventDefault(); __shortcuts.get(combo)(e); }
+});
+function trapFocus(modalEl){
+  const focusable = modalEl.querySelectorAll('a,button,input,select,textarea,[tabindex]:not([tabindex="-1"])');
+  let first=focusable[0], last=focusable[focusable.length-1];
+  modalEl.addEventListener('keydown', e=>{
+    if(e.key!=='Tab') return;
+    if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+  });
+}
+
+// === Robust CSV export ===
+function exportCSV(rows, filenameBase='sales'){
+  const safeRows = Array.isArray(rows)&&rows.length? rows : [['No data']];
+  const csv = safeRows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(',')).join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const ts = new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  const name = `${filenameBase}_${ts.getFullYear()}-${pad(ts.getMonth()+1)}-${pad(ts.getDate())}_${pad(ts.getHours())}${pad(ts.getMinutes())}.csv`;
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href);
+}
+
+// === Auth guard and scoped listeners ===
+function onAuthed(app, callback){
+  const { getAuth, onAuthStateChanged } = window.firebaseAuth || {};
+  if (!getAuth) return callback(null);
+  const auth = getAuth(app);
+  onAuthStateChanged(auth, user=>{
+    if(!user || user.isAnonymous){ console.warn('Blocked anonymous access'); callback(null); }
+    else callback(user);
+  });
+}
+
+// === Simple pagination helper ===
+function paginate(items, page=1, perPage=50){
+  const total = items.length || 0;
+  const pages = Math.max(1, Math.ceil(total/perPage));
+  const p = Math.min(Math.max(1,page), pages);
+  const start = (p-1)*perPage;
+  return { page:p, perPage, pages, total, data: items.slice(start, start+perPage) };
+}
+
+// === Accessibility helpers ===
+function applyA11yTable(el){ if(!el) return; el.setAttribute('role','table'); el.querySelectorAll('thead').forEach(th=>th.setAttribute('role','rowgroup')); }
+function applyA11yButton(el){ if(!el) return; el.setAttribute('role','button'); el.setAttribute('tabindex','0'); }
+function applyA11yModal(el){ if(!el) return; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); trapFocus(el); }
