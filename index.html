@@ -2426,11 +2426,11 @@ const POS_APP = {
      
                                    row.title = 'รายการนี้ถูก Export แล้วโดยระบบอัตโนมัติ';
                 }
-                let itemDetails = sale.items.map(item => {
-                    let name = this.escapeHtml(item.name);
-                    return 
-                    `${name} (x${item.quantity})`;
-                }).join('<br>');
+const itemDetails = sale.items.map(item => {
+  const name = this.escapeHtml(item.name);
+  return `${name} (x${item.quantity})`;
+}).join('<br>');
+
                 const discountAmount = sale.discount ? sale.discount.toFixed(2) : '0.00';
                 
                 let adminActions = `<button type="button" class="edit-history-btn" onclick="POS_APP.editSaleRecord('${sale.firestoreId}')">แก้ไข</button><button type="button" class="delete-history-btn" onclick="POS_APP.showDeleteConfirmModal('${sale.firestoreId}', false)">ลบ</button>`;
