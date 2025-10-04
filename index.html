@@ -749,7 +749,8 @@ function updateCartHighlight(li, qty) {
 const POS_APP = {
     config: {
         googleSheetUrl: 'https://script.google.com/macros/s/AKfycbxmfug0KSRUqLMpDgb2LLbZRtdbOmj3P8gdmh1ZyL65aLB-wsmRQ6AJZRWSHdjGA3aZ/exec',
-        thaiToEngMap: { 'ๅ': '1', '/': '2', '-': '3', 'ภ': '4', 'ถ': '5', 'ุ': '6', 'ึ': '7', 'ค': '8', 'ต': '9', 'จ': '0', 'ข': '-', 'ช': '=', 'ๆ': 'q', 'ไ': 'w', 'ำ': 'e', 'พ': 'r', 'ะ': 't', 'ั': 'y', 'ี': 'u', 'ร': 'i', 'น': 'o', 'ย': 'p', 'บ': '[', 'ล': ']', 'ฟ': 'a', 'ห': 's', 'ก': 'd', 'ด': 'f', 'เ': 'g', '้': 'h', '่': 'j', 'า': 'k', 'ส': 'l', 'ว': ';', 'ง': "'", 'ผ': 'z', 'ป': 'x', 'แ': 'c', 'อ': 'v', 'ิ': 'b', 'ท': 'n', 'ม': 'm', 'ใ': ',', 'ฝ': '.', 'ซ': '/' }
+        thaiToEngMap: { 'ๅ': '1', '/': '2', '-': '3', 'ภ': '4', 'ถ': '5', 'ุ': '6', 'ึ': '7', 'ค': '8', 'ต': '9', 'จ': '0', 'ข': '-', 'ช': '=', 'ๆ': 'q', 'ไ': 'w', 'ำ': 'e', 'พ': 'r', 'ะ': 't', 'ั': 'y', 'ี': 'u', 'ร': 'i', 'น': 'o', 'ย': 'p', 'บ': '[', 'ล': ']', 'ฟ': 'a', 'ห': 's', 'ก': 'd', 'ด': 'f', 'เ': 'g', '้': 'h', '่': 'j', 'า': 'k', 'ส': 'l', 'ว': ';', 'ง': "'", 'ผ': 'z', 'ป': 
+        'x', 'แ': 'c', 'อ': 'v', 'ิ': 'b', 'ท': 'n', 'ม': 'm', 'ใ': ',', 'ฝ': '.', 'ซ': '/' }
     },
     state: {
         activeOverlay: null,
@@ -760,7 +761,8 @@ const POS_APP = {
         isSaving: false,
         activeModalCloseHandler: null,
         tabs: new Map(),
-        activeTabId: null,
+ 
+       activeTabId: null,
         isRestrictedMode: true,
         keyboardLayout: 'ENG', 
         basePlaceholder: 'ค้นหา...',
@@ -771,7 +773,8 @@ const POS_APP = {
         lastSheetHash: null,
         autoImportInterval: null,
         _costCalculationListener: null,
-        productListPage: 1,
+ 
+       productListPage: 1,
         productsPerPage: 10,
         receiptSettings: {},
         lastInputTimestamp: 0,
@@ -846,24 +849,26 @@ const POS_APP = {
     },
     
     setupEventListeners() {
+        // ✅ [MODIFIED] เพิ่ม Event Listener สำหรับ `pos:online`
+        document.addEventListener('pos:online', () => this.syncOfflineSales());
+
         document.getElementById('app-sidebar').addEventListener('click', (e) => {
             const button = e.target.closest('.sidebar-btn');
             if (!button) return;
             const view = button.dataset.view;
             if (view === 'history') this.showHistoryModal();
             else if (view === 'settings') this.showSettingsModal();
-        });
+   
+         });
 
         // [NEW] Event listener for the "Add Tab" button
         document.getElementById('add-new-tab-btn').addEventListener('click', () => this.addNewSaleTab());
-
         document.querySelectorAll('.close-main-modal-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 this.hideHistoryModal();
                 this.hideSettingsModal();
             });
         });
-
         document.getElementById('receipt-settings-btn').addEventListener('click', this.showReceiptSettingsModal.bind(this));
         document.getElementById('save-receipt-settings-btn').addEventListener('click', this.saveReceiptSettings.bind(this));
         document.getElementById('cancel-receipt-settings-btn').addEventListener('click', this.hideReceiptSettingsModal.bind(this));
@@ -890,16 +895,17 @@ const POS_APP = {
                 this.state.isRestrictedMode = false;
                 e.target.value = '';
                 this.showInfoModal("เข้าสู่โหมดผู้ดูแล", "เปิดใช้งานฟังก์ชันการแก้ไขบิลและดูสรุปยอดขายแล้ว");
-                this.toggleUIVisibility();
+             
+               this.toggleUIVisibility();
             } else if (query === '0000000000') {
                  this.state.isRestrictedMode = true;
                 e.target.value = '';
                 this.showInfoModal("ออกจากโหมดผู้ดูแล", "ปิดฟังก์ชันการแก้ไขบิลและซ่อนข้อมูลสรุปยอดขาย");
                 this.toggleUIVisibility();
-            }
+         
+           }
             this.updateHistoryDisplay();
         });
-
         document.getElementById('export-excel-btn').addEventListener('click', this.exportToExcel.bind(this));
         document.getElementById('clear-all-history-btn').addEventListener('click', this.showClearOptionsModal.bind(this));
         document.getElementById('cash-received-input').addEventListener('input', this.calculateChange.bind(this));
@@ -940,6 +946,7 @@ const POS_APP = {
                 const newPage = parseInt(button.dataset.page, 10);
                 if (newPage !== this.state.productListPage) {
                     this.state.productListPage = newPage;
+    
                     this.renderProductList(document.getElementById('product-search-input').value);
                 }
             }
@@ -964,7 +971,7 @@ const POS_APP = {
         for (let i = 0; i < text.length; i++) {
             const char = text.charCodeAt(i);
             hash = ((hash << 5) - hash) + char;
-            hash |= 0; 
+            hash |= 0;
         }
         return hash;
     },
@@ -996,29 +1003,32 @@ const POS_APP = {
                 if (!response.ok) return;
 
                 const jsonData = await response.json();
-                const currentHash = await this._normalizeAndHashData(jsonData);
+       
+                 const currentHash = await this._normalizeAndHashData(jsonData);
 
                 if (this.state.lastSheetHash && this.state.lastSheetHash !== currentHash) {
                     console.log('Auto-Import: Detected changes. Importing...');
                     this.showInfoModal('อัปเดตอัตโนมัติ', 'ตรวจพบการเปลี่ยนแปลงใน Google Script กำลังนำเข้าข้อมูล...');
-                    this.importFromGoogleSheet(true);
+                  
+                  this.importFromGoogleSheet(true);
                 } else if (!this.state.lastSheetHash) {
                     console.log('Auto-Import: Initial hash set.');
                 } else {
                     console.log('Auto-Import: No changes detected.');
-                }
+              
+                  }
                 this.state.lastSheetHash = currentHash;
-            } catch (error) {
+        } catch (error) {
                 console.error('Auto-Import Error:', error);
-            }
+        }
         }, intervalMinutes * 60 * 1000);
-        
         (async () => {
             try {
                 const response = await fetch(this.config.googleSheetUrl);
                 if (response.ok) {
                     const jsonData = await response.json();
-                    this.state.lastSheetHash = await this._normalizeAndHashData(jsonData);
+                    this.state.lastSheetHash = 
+                    await this._normalizeAndHashData(jsonData);
                     console.log('Auto-Import: Polling started. Initial hash captured.');
                 }
             } catch (e) {
@@ -1040,14 +1050,12 @@ const POS_APP = {
             return;
         }
         this.showInfoModal("กำลังนำเข้า...", "กำลังดาวน์โหลดข้อมูลจาก Google Script กรุณารอสักครู่...");
-
         try {
             const response = await fetch(this.config.googleSheetUrl);
             if (!response.ok) {
                 throw new Error(`Network response was not ok, status: ${response.status}`);
             }
             const results = await response.json();
-            
             const sheetData = results.data || results;
 
             if (!sheetData || !Array.isArray(sheetData) || sheetData.length === 0) {
@@ -1067,7 +1075,6 @@ const POS_APP = {
                     existingProducts.set(String(product.productCode), { id: doc.id, data: product });
                 }
             });
-
             this.showInfoModal("กำลังประมวลผล...", `พบข้อมูล ${sheetData.length} รายการ, กำลังเปรียบเทียบและอัปเดต...`);
             const batch = api.writeBatch(db);
             const now = new Date().toISOString();
@@ -1075,12 +1082,12 @@ const POS_APP = {
             let addedCount = 0;
 
             for (const row of sheetData) {
-                const productCode = row['รหัสสินค้า'] ? String(row['รหัสสินค้า']).trim() : '';
+                const productCode = row['รหัสสินค้า'] ?
+                String(row['รหัสสินค้า']).trim() : '';
                 if (!productCode) continue;
 
                 const barcode = row['บาร์โค้ด'] ? String(row['บาร์โค้ด']).trim() : '';
                 const existingProductInfo = existingProducts.get(productCode);
-
                 if (existingProductInfo) {
                     const docRef = api.doc(db, productsCollectionRef.path, existingProductInfo.id);
                     const productData = existingProductInfo.data;
@@ -1089,40 +1096,48 @@ const POS_APP = {
                     productData.pricingUnits = productData.pricingUnits.map(unit => {
                         if (unit.barcode === barcode) {
                             unitFound = true;
-                            unit.cost = parseFloat(row['ต้นทุน']) || unit.cost || 0;
+                            unit.cost = 
+                            parseFloat(row['ต้นทุน']) || unit.cost || 0;
                             unit.defaultPrice = parseFloat(row['ราคา']) || unit.defaultPrice || 0;
                             const baseTier = (unit.priceTiers || []).find(t => t.quantity === 1);
-                            if (baseTier) {
+                         
+                           if (baseTier) {
                                 baseTier.price = unit.defaultPrice;
                             } else {
-                                if (!unit.priceTiers) unit.priceTiers = [];
+                               
+                             if (!unit.priceTiers) unit.priceTiers = [];
                                 unit.priceTiers.push({ quantity: 1, price: unit.defaultPrice });
                                 unit.priceTiers.sort((a, b) => b.quantity - a.quantity);
-                            }
+                     
+                       }
                         }
                         return unit;
                     });
-
                     if (!unitFound && barcode) {
-                        const defaultPrice = parseFloat(row['ราคา']) || 0;
+                        const defaultPrice = parseFloat(row['ราคา']) ||
+                        0;
                         productData.pricingUnits.push({
                             unitName: row['หน่วย'] ? String(row['หน่วย']).trim() : 'หน่วย',
                             barcode: barcode,
                             cost: parseFloat(row['ต้นทุน']) || 0,
-                            conversionFactor: 1,
+      
+                                                   conversionFactor: 1,
                             defaultPrice: defaultPrice,
                             priceTiers: [{ quantity: 1, price: defaultPrice }]
-                        });
+              
+                         });
                     }
                     
                     batch.update(docRef, {
                         stockInBaseUnits: parseInt(row['คงเหลือ'], 10) || productData.stockInBaseUnits,
                         pricingUnits: productData.pricingUnits,
-                        updatedAt: now
+      
+                                         updatedAt: now
                     });
                     updatedCount++;
                 } else {
-                    const productName = row['ชื่อการค้า'] ? String(row['ชื่อการค้า']).trim() : '';
+                    const productName = row['ชื่อการค้า'] ?
+                    String(row['ชื่อการค้า']).trim() : '';
                     if (!productName) continue;
                     
                     const newDocRef = api.doc(productsCollectionRef);
@@ -1132,17 +1147,22 @@ const POS_APP = {
                     const newProductData = {
                         productCode: productCode,
                         productName: productName,
-                        category: row['หมวดหมู่'] ? String(row['หมวดหมู่']).trim() : '',
+                        category: row['หมวดหมู่'] ?
+                        String(row['หมวดหมู่']).trim() : '',
                         baseUnit: unitName,
-                        stockInBaseUnits: parseInt(row['คงเหลือ'], 10) || 0,
+                        stockInBaseUnits: parseInt(row['คงเหลือ'], 10) ||
+                        0,
                         pricingUnits: [{
                             unitName: unitName,
                             barcode: barcode,
-                            cost: parseFloat(row['ต้นทุน']) || 0,
+                 
+                           cost: parseFloat(row['ต้นทุน']) ||
+                           0,
                             conversionFactor: 1,
                             defaultPrice: defaultPrice,
                             priceTiers: [{ quantity: 1, price: defaultPrice }]
-                        }],
+        
+                         }],
                         createdAt: now,
                         updatedAt: now
                     };
@@ -1160,11 +1180,14 @@ const POS_APP = {
         }
     },
 
-    getSalesHistoryCollectionRef() { const { appId, db, api } = window.firebaseServices; return api.collection(db, `artifacts/${appId}/public/data/salesHistory`); },
-    getProductsCollectionRef() { const { appId, db, api } = window.firebaseServices; return api.collection(db, `artifacts/${appId}/public/data/products`); },
-    getReceiptSettingsDocRef() { const { appId, db, api } = window.firebaseServices; return api.doc(db, `artifacts/${appId}/public/data/configuration/receipt`); },
+    getSalesHistoryCollectionRef() { const { appId, db, api } = window.firebaseServices;
+    return api.collection(db, `artifacts/${appId}/public/data/salesHistory`); },
+    getProductsCollectionRef() { const { appId, db, api } = window.firebaseServices; return api.collection(db, `artifacts/${appId}/public/data/products`);
+    },
+    getReceiptSettingsDocRef() { const { appId, db, api } = window.firebaseServices; return api.doc(db, `artifacts/${appId}/public/data/configuration/receipt`);
+    },
     listenForProducts() { 
-        const productsCollectionRef = this.getProductsCollectionRef(); 
+        const productsCollectionRef = this.getProductsCollectionRef();
         if (!productsCollectionRef) return; 
         if (this.state.unsubscribeProducts) this.state.unsubscribeProducts(); 
         this.state.unsubscribeProducts = window.firebaseServices.api.onSnapshot(productsCollectionRef, (querySnapshot) => { 
@@ -1173,26 +1196,24 @@ const POS_APP = {
             this.state.productsFromFirestore = products.sort((a, b) => (a.productName || '').localeCompare(b.productName || '')); 
             this.prepareSearchableProducts(); 
             this.renderProductList(); 
-        }, (error) => { 
+   
+             }, (error) => { 
             console.error("Error listening for products:", error); 
             this.showInfoModal("ข้อผิดพลาด", "ไม่สามารถโหลดรายการสินค้าจากฐานข้อมูลได้", true); 
-        }); 
+        });
     },
     calculateItemTotal(pricingUnit, quantity) {
         if (!pricingUnit) return 0;
-        
         if (!pricingUnit.priceTiers || pricingUnit.priceTiers.length === 0) {
             return (pricingUnit.defaultPrice || 0) * quantity;
         }
 
         const sortedTiers = [...pricingUnit.priceTiers].sort((a, b) => b.quantity - a.quantity);
-        
         let totalPrice = 0;
         let remainingQuantity = quantity;
 
         for (const tier of sortedTiers) {
-            if (tier.quantity <= 0) continue; 
-            
+            if (tier.quantity <= 0) continue;
             if (remainingQuantity >= tier.quantity) {
                 const numBundles = Math.floor(remainingQuantity / tier.quantity);
                 totalPrice += numBundles * tier.price;
@@ -1208,18 +1229,22 @@ const POS_APP = {
                 product.pricingUnits.forEach(unit => {
                     const basePrice = this.calculateItemTotal(unit, 1);
                     const cartItemId = unit.barcode || `${product.id}-${unit.unitName}`;
+               
                     const searchableItem = {
                         productId: product.id,
                         productCode: product.productCode || '',
                         productName: product.productName,
-                        category: product.category || '',
+               
+                         category: product.category || '',
                         baseUnit: product.baseUnit || '',
                         stockInBaseUnits: product.stockInBaseUnits || 0,
                         pricingUnit: unit,
-                        display: `${product.productName} (${unit.unitName})`,
+         
+                               display: `${product.productName} (${unit.unitName})`,
                         barcode: unit.barcode || '',
                         price: basePrice,
-                        _searchableText: [product.productCode, product.productName, product.category, unit.unitName, unit.barcode].join(' ').toLowerCase().replace(/\s+/g, ' '),
+                        _searchableText: [product.productCode, product.productName, product.category, unit.unitName, unit.barcode].join(' ').toLowerCase().replace(/\s+/g, 
+                        ' '),
                         cartItemId: cartItemId
                     };
                     flatList.push(searchableItem);
@@ -1247,22 +1272,27 @@ const POS_APP = {
             priceTierRows.forEach(row => {
                 const quantity = parseInt(row.querySelector('input[data-field="tier-qty"]').value, 10);
                 const price = parseFloat(row.querySelector('input[data-field="tier-price"]').value);
-                if (!isNaN(quantity) && quantity > 0 && !isNaN(price)) {
+           
+                 if (!isNaN(quantity) && quantity > 0 && !isNaN(price)) {
                     priceTiers.push({ quantity, price });
                 } else {
                     formIsValid = false;
                 }
-            });
+        
+             });
             if (priceTiers.length === 0) {
                 formIsValid = false;
             }
             priceTiers.sort((a, b) => b.quantity - a.quantity);
             const defaultPrice = priceTiers.find(t => t.quantity === 1)?.price || priceTiers[priceTiers.length - 1]?.price || 0;
-            const unit = {
+        
+             const unit = {
                 unitName: card.querySelector('input[data-field="unitName"]').value.trim(),
                 barcode: card.querySelector('input[data-field="barcode"]').value.trim(),
-                cost: parseFloat(card.querySelector('input[data-field="cost"]').value) || 0,
-                conversionFactor: parseInt(card.querySelector('input[data-field="conversionFactor"]').value, 10) || 1,
+                cost: parseFloat(card.querySelector('input[data-field="cost"]').value) ||
+                0,
+                conversionFactor: parseInt(card.querySelector('input[data-field="conversionFactor"]').value, 10) ||
+                1,
                 defaultPrice: defaultPrice,
                 priceTiers: priceTiers
             };
@@ -1279,7 +1309,8 @@ const POS_APP = {
             productName: productName,
             category: document.getElementById('product-category').value.trim(),
             baseUnit: document.getElementById('product-base-unit').value.trim(),
-            stockInBaseUnits: parseInt(document.getElementById('product-stock').value, 10) || 0,
+            stockInBaseUnits: parseInt(document.getElementById('product-stock').value, 10) ||
+            0,
             pricingUnits: pricingUnits,
             updatedAt: new Date().toISOString()
         };
@@ -1302,30 +1333,32 @@ const POS_APP = {
         }
     },
     async handleDeleteProduct(productId) { 
-        const productToDelete = this.state.productsFromFirestore.find(p => p.id === productId); 
+        const productToDelete = this.state.productsFromFirestore.find(p => p.id === productId);
         if (!productToDelete) return; 
         const confirmation = confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบสินค้า "${productToDelete.productName}"? การกระทำนี้ไม่สามารถย้อนกลับได้`); 
         if (confirmation) { 
             try { 
-                const { api, db } = window.firebaseServices; 
+                const { api, db } = window.firebaseServices;
                 const docRef = api.doc(db, this.getProductsCollectionRef().path, productId); 
                 await api.deleteDoc(docRef); 
-                this.showInfoModal("สำเร็จ", `ลบสินค้า "${productToDelete.productName}" เรียบร้อยแล้ว`); 
+                this.showInfoModal("สำเร็จ", `ลบสินค้า "${productToDelete.productName}" เรียบร้อยแล้ว`);
             } catch (error) { 
-                console.error("Error deleting product:", error); 
+                console.error("Error deleting product:", error);
                 this.showInfoModal("ผิดพลาด", `เกิดข้อผิดพลาดในการลบข้อมูล: ${error.message}`, true); 
             } 
         } 
     },
     showProductMgmtModal() { 
-        document.getElementById('product-mgmt-modal').style.display = 'flex'; 
+        document.getElementById('product-mgmt-modal').style.display = 'flex';
         document.getElementById('product-search-input').value = ''; 
         this.state.productListPage = 1;
         this.renderProductList(); 
     },
-    hideProductMgmtModal() { document.getElementById('product-mgmt-modal').style.display = 'none'; },
+    hideProductMgmtModal() { document.getElementById('product-mgmt-modal').style.display = 'none';
+    },
     showProductEditorModal(product = null) {
-        this.state.currentEditingProductId = product ? product.id : null;
+        this.state.currentEditingProductId = product ?
+        product.id : null;
         const form = document.getElementById('product-editor-form');
         form.reset();
         document.getElementById('product-editor-title').textContent = product ? `แก้ไขสินค้า: ${product.productName}` : 'เพิ่มสินค้าใหม่';
@@ -1341,7 +1374,7 @@ const POS_APP = {
             document.getElementById('product-stock').value = product.stockInBaseUnits || 0;
             (product.pricingUnits || []).forEach(unit => this.addPricingUnitRow(unit));
         } else {
-            this.addPricingUnitRow(); 
+            this.addPricingUnitRow();
         }
         document.getElementById('product-editor-modal').style.display = 'flex';
         const container = document.getElementById('pricing-units-container');
@@ -1364,7 +1397,8 @@ const POS_APP = {
                     const conversionInput = card.querySelector('input[data-field="conversionFactor"]');
                     const costInput = card.querySelector('input[data-field="cost"]');
                     if (conversionInput && costInput) {
-                        const factor = parseFloat(conversionInput.value) || 0;
+                        const factor = parseFloat(conversionInput.value) 
+                        || 0;
                         costInput.value = (baseCost * factor).toFixed(2);
                     }
                 });
@@ -1372,14 +1406,16 @@ const POS_APP = {
             else if (changedCard !== firstCard && target.dataset.field === 'conversionFactor') {
                 const costInput = changedCard.querySelector('input[data-field="cost"]');
                 if (costInput) {
-                    const factor = parseFloat(target.value) || 0;
+                    const factor = parseFloat(target.value) ||
+                    0;
                     costInput.value = (baseCost * factor).toFixed(2);
                 }
             }
         };
         container.addEventListener('input', this.state._costCalculationListener);
     },
-    hideProductEditorModal() { document.getElementById('product-editor-modal').style.display = 'none'; },
+    hideProductEditorModal() { document.getElementById('product-editor-modal').style.display = 'none';
+    },
     renderProductList(filterText = '') {
         const container = document.getElementById('product-list-container');
         const lowercasedFilter = filterText.toLowerCase().trim();
@@ -1398,9 +1434,9 @@ const POS_APP = {
         if (totalItems === 0) {
              if (lowercasedFilter) {
                  container.innerHTML = '<p style="text-align:center; padding: 2rem;">ไม่พบสินค้าที่ตรงกับคำค้นหา</p>';
-             } else {
+        } else {
                  container.innerHTML = '<p style="text-align:center; padding: 2rem;">ยังไม่มีสินค้าในระบบ, กด "เพิ่มสินค้าใหม่" หรือ "นำเข้าข้อมูล" เพื่อเริ่มต้น</p>';
-             }
+        }
              this.renderPaginationControls(0);
              return;
         }
@@ -1421,7 +1457,8 @@ const POS_APP = {
         let html = '<div class="pagination-controls">';
         html += `<button data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>&laquo; ก่อนหน้า</button>`;
         html += `<span class="pagination-info">หน้า ${currentPage} / ${totalPages}</span>`;
-        html += `<button data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>ถัดไป &raquo;</button>`;
+        html += `<button data-page="${currentPage + 1}" ${currentPage === totalPages ?
+        'disabled' : ''}>ถัดไป &raquo;</button>`;
         html += '</div>';
         paginationContainer.innerHTML = html;
     },
@@ -1429,9 +1466,12 @@ const POS_APP = {
         const container = document.getElementById('pricing-units-container');
         const card = document.createElement('div');
         card.className = 'pricing-unit-card';
-        const priceTiers = (unitData && unitData.priceTiers && unitData.priceTiers.length > 0) ? unitData.priceTiers : [{ quantity: 1, price: 0 }];
+        const priceTiers = (unitData && unitData.priceTiers && unitData.priceTiers.length > 0) ?
+        unitData.priceTiers : [{ quantity: 1, price: 0 }];
         const priceTiersHTML = priceTiers.map(tier => this.createPriceTierRowHTML(tier.quantity, tier.price)).join('');
-        card.innerHTML = `<div class="pricing-unit-header"><h4>หน่วยขาย</h4><button type="button" class="delete-item-btn" data-action="remove-unit" title="ลบหน่วยนี้"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></div><div class="pricing-unit-grid"><div class="form-group"><label>ชื่อหน่วย</label><input type="text" data-field="unitName" placeholder="เช่น ชิ้น, แพ็ค" value="${unitData?.unitName || ''}" required></div><div class="form-group"><label>บาร์โค้ด (ถ้ามี)</label><input type="text" data-field="barcode" value="${unitData?.barcode || ''}"></div><div class="form-group"><label>ต้นทุน/หน่วยนี้</label><input type="number" step="any" data-field="cost" value="${unitData?.cost || 0}"></div><div class="form-group"><label>ตัวคูณ (เทียบกับหน่วยเล็ก)</label><input type="number" step="1" data-field="conversionFactor" placeholder="1 แพ็ค = 6 ชิ้น (ใส่ 6)" value="${unitData?.conversionFactor || 1}" required></div></div><div class="price-tiers-container"><label style="font-weight:bold; font-size: 0.9em;">ราคาขายตามจำนวน</label><div class="price-tier-header"><div>ซื้อครบ (ชิ้น)</div><div>ราคารวม (บาท)</div><div></div></div><div class="price-tiers-list">${priceTiersHTML}</div><button type="button" class="add-tier-btn" data-action="add-tier">+ เพิ่มระดับราคา</button></div>`;
+        card.innerHTML = `<div class="pricing-unit-header"><h4>หน่วยขาย</h4><button type="button" class="delete-item-btn" data-action="remove-unit" title="ลบหน่วยนี้"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></div><div class="pricing-unit-grid"><div class="form-group"><label>ชื่อหน่วย</label><input type="text" data-field="unitName" placeholder="เช่น ชิ้น, แพ็ค" value="${unitData?.unitName || ''}" required></div><div class="form-group"><label>บาร์โค้ด (ถ้ามี)</label><input type="text" data-field="barcode" value="${unitData?.barcode || ''}"></div><div class="form-group"><label>ต้นทุน/หน่วยนี้</label><input type="number" step="any" data-field="cost" value="${unitData?.cost ||
+        0}"></div><div class="form-group"><label>ตัวคูณ (เทียบกับหน่วยเล็ก)</label><input type="number" step="1" data-field="conversionFactor" placeholder="1 แพ็ค = 6 ชิ้น (ใส่ 6)" value="${unitData?.conversionFactor || 1}" required></div></div><div class="price-tiers-container"><label style="font-weight:bold;
+        font-size: 0.9em;">ราคาขายตามจำนวน</label><div class="price-tier-header"><div>ซื้อครบ (ชิ้น)</div><div>ราคารวม (บาท)</div><div></div></div><div class="price-tiers-list">${priceTiersHTML}</div><button type="button" class="add-tier-btn" data-action="add-tier">+ เพิ่มระดับราคา</button></div>`;
         container.appendChild(card);
     },
     createPriceTierRowHTML(quantity = 1, price = 0) {
@@ -1443,44 +1483,45 @@ const POS_APP = {
         if (firstUnitCard) {
             const costInput = firstUnitCard.querySelector('input[data-field="cost"]');
             if (costInput) {
-                baseCost = parseFloat(costInput.value) || 0;
+                baseCost = parseFloat(costInput.value) ||
+                0;
             }
         }
         this.addPricingUnitRow({ cost: baseCost, conversionFactor: 1 });
     },
     handlePricingUnitActions(e) { 
-        const button = e.target.closest('button'); 
+        const button = e.target.closest('button');
         if (!button) return; 
         const action = button.dataset.action; 
         if (action === 'remove-unit') { 
             const card = button.closest('.pricing-unit-card');
             if (card.parentElement.children.length > 1) {
-                card.remove(); 
+                card.remove();
             } else {
                 alert('ต้องมีหน่วยขายอย่างน้อย 1 หน่วย');
             }
         } else if (action === 'add-tier') { 
-            const list = button.previousElementSibling; 
+            const list = button.previousElementSibling;
             list.insertAdjacentHTML('beforeend', this.createPriceTierRowHTML(1, 0)); 
         } else if (action === 'remove-tier') { 
-            const row = button.closest('.price-tier-row'); 
+            const row = button.closest('.price-tier-row');
             if (row.parentElement.children.length > 1) { 
-                row.remove(); 
+                row.remove();
             } else { 
-                alert('ต้องมีระดับราคาอย่างน้อย 1 ระดับ'); 
+                alert('ต้องมีระดับราคาอย่างน้อย 1 ระดับ');
             } 
         } 
     },
     handleProductListActions(e) { 
-        const target = e.target.closest('button'); 
+        const target = e.target.closest('button');
         if (!target) return; 
         const action = target.dataset.action; 
-        const id = target.dataset.id; 
+        const id = target.dataset.id;
         if (action === 'edit') { 
-            const productToEdit = this.state.productsFromFirestore.find(p => p.id === id); 
+            const productToEdit = this.state.productsFromFirestore.find(p => p.id === id);
             if (productToEdit) this.showProductEditorModal(productToEdit); 
         } else if (action === 'delete') { 
-            this.handleDeleteProduct(id); 
+            this.handleDeleteProduct(id);
         } 
     },
     detectScan() {
@@ -1524,27 +1565,28 @@ const POS_APP = {
 
             if (p.barcode && p.barcode.toLowerCase() === queryToSearch) {
                 score = 100;
-            } else if (p.productCode && p.productCode.toLowerCase() === queryToSearch) {
+            } 
+            else if (p.productCode && p.productCode.toLowerCase() === queryToSearch) {
                 score = 80;
             } else if (searchableText.includes(queryToSearch)) {
                 if (p.productName.toLowerCase().startsWith(queryToSearch)) {
                     score = 50;
                 } else {
-                    score = 20;
+ 
+                                       score = 20;
                 }
             }
 
             if (score > 0) {
                 return { ...p, score };
             }
-            return null;
+   
+                 return null;
         }).filter(Boolean);
-
         results.sort((a, b) => {
             if (b.score !== a.score) { return b.score - a.score; }
             return a.productName.localeCompare(b.productName);
         });
-
         this.state.currentSearchResults = results;
         this.state.selectedSearchIndex = results.length > 0 ? 0 : -1;
         this.displaySearchResults(results, queryToSearch);
@@ -1572,13 +1614,15 @@ const POS_APP = {
             let highlightedDisplay = this.escapeHtml(productUnit.display);
             
             itemDiv.innerHTML = `<div><span>${highlightedDisplay}</span></div><span class="price">${this.formatPrice(productUnit.price)}</span>`;
-            
+         
+               
             itemDiv.onclick = () => {
                 const inputValue = document.getElementById('barcode-input').value.trim();
                 const quantityPattern = /^(\d+)\s*\*\s*(.+)$/;
                 const match = inputValue.match(quantityPattern);
                 let quantityToAdd = 1;
-                if (match) {
+     
+                           if (match) {
                     quantityToAdd = parseInt(match[1], 10);
                 }
                 this.addToCart(this.state.currentSearchResults[index], quantityToAdd);
@@ -1592,20 +1636,21 @@ const POS_APP = {
         });
     },
     escapeRegex(string) { return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'); },
-    escapeHtml(string) { const p = document.createElement("p"); p.textContent = string; return p.innerHTML; },
+    escapeHtml(string) { const p = document.createElement("p");
+    p.textContent = string; return p.innerHTML; },
     addToCart(productUnit, quantityToAdd = 1) { 
-        const cart = this.getActiveCart(); 
+        const cart = this.getActiveCart();
         if (!cart) return; 
         const cartItemId = productUnit.barcode || `${productUnit.productId}-${productUnit.pricingUnit.unitName}`; 
-        const existingProduct = cart.find(item => item.cartItemId === cartItemId); 
+        const existingProduct = cart.find(item => item.cartItemId === cartItemId);
         if (existingProduct) { 
             existingProduct.quantity += quantityToAdd; 
             delete existingProduct.priceOverride;
         } else { 
-            const newItem = { cartItemId: cartItemId, productUnit: productUnit, quantity: quantityToAdd }; 
+            const newItem = { cartItemId: cartItemId, productUnit: productUnit, quantity: quantityToAdd };
             cart.push(newItem); 
         } 
-        this.updateCartDisplay(); 
+        this.updateCartDisplay();
     },
     
     // [NEW] Functions to show and hide the promotion tooltip
@@ -1632,7 +1677,6 @@ const POS_APP = {
             const tooltipRect = tooltip.getBoundingClientRect();
             let top = event.clientY + 15;
             let left = event.clientX + 10;
-            
             if (top + tooltipRect.height > window.innerHeight) {
                 top = event.clientY - tooltipRect.height - 10;
             }
@@ -1642,7 +1686,6 @@ const POS_APP = {
 
             tooltip.style.top = `${top}px`;
             tooltip.style.left = `${left}px`;
-
         } catch (e) {
             console.error("Could not parse promotions data", e);
             tooltip.style.display = 'none';
@@ -1671,18 +1714,21 @@ const POS_APP = {
             let pricePerUnit;
 
             if (typeof priceOverride === 'number') {
-                pricePerUnit = priceOverride;
+  
+                             pricePerUnit = priceOverride;
                 totalForItem = pricePerUnit * quantity;
             } else {
                 totalForItem = this.calculateItemTotal(productUnit.pricingUnit, quantity);
                 pricePerUnit = quantity > 0 ? totalForItem / quantity : 0;
-            }
+     
+               }
             subtotal += totalForItem;
             
             // [MODIFIED] Check for promotions and add listeners
             const promotions = productUnit?.pricingUnit?.priceTiers?.filter(tier => tier.quantity > 1);
             if (promotions && promotions.length > 0) {
-                li.classList.add('has-promotion');
+           
+                 li.classList.add('has-promotion');
                 li.dataset.promotions = JSON.stringify(promotions);
                 li.dataset.productName = productUnit.display;
                 li.addEventListener('mouseenter', this.showPromotionTooltip.bind(this));
@@ -1704,7 +1750,6 @@ const POS_APP = {
         const total = subtotal - (discount || 0);
         document.getElementById('cart-subtotal').textContent = subtotal.toFixed(2);
         document.getElementById('cart-total').textContent = total.toFixed(2);
-        
     },
 
     editItemTotal(index, newTotalValue) {
@@ -1722,42 +1767,42 @@ const POS_APP = {
     },
 
     showInfoModal(title, text, isError = false) { 
-        const titleEl = document.getElementById('info-modal-title'); 
+        const titleEl = document.getElementById('info-modal-title');
         const textEl = document.getElementById('info-modal-text'); 
         const okBtn = document.getElementById('info-modal-ok-btn'); 
         titleEl.textContent = title; 
-        titleEl.style.color = isError ? 'var(--danger-color)' : 'var(--primary-color)'; 
+        titleEl.style.color = isError ? 'var(--danger-color)' : 'var(--primary-color)';
         textEl.textContent = text; 
         okBtn.style.backgroundColor = isError ? 'var(--danger-color)' : 'var(--primary-color)'; 
-        document.getElementById('info-modal').style.display = 'flex'; 
+        document.getElementById('info-modal').style.display = 'flex';
         this.state.activeModalCloseHandler = (e) => { 
             if (e.key === 'Enter' || e.key === 'Escape') { 
-                e.preventDefault(); 
+                e.preventDefault();
                 this.hideInfoModal(); 
             } 
         }; 
         document.addEventListener('keydown', this.state.activeModalCloseHandler); 
-        okBtn.focus(); 
+        okBtn.focus();
     },
     hideInfoModal() { 
-        document.getElementById('info-modal').style.display = 'none'; 
+        document.getElementById('info-modal').style.display = 'none';
         if (this.state.activeModalCloseHandler) { 
             document.removeEventListener('keydown', this.state.activeModalCloseHandler); 
-            this.state.activeModalCloseHandler = null; 
+            this.state.activeModalCloseHandler = null;
         } 
     },
     updatePlaceholderHint() { 
-        const input = document.getElementById('barcode-input'); 
+        const input = document.getElementById('barcode-input');
         if (input) input.placeholder = `[${this.state.keyboardLayout}] ${this.state.basePlaceholder}`; 
     },
     detectKeyboardLayout(e) { 
-        if (e.key.length !== 1 || e.ctrlKey || e.altKey || e.metaKey) return; 
+        if (e.key.length !== 1 || e.ctrlKey || e.altKey || e.metaKey) return;
         const isThai = /[ก-๙]/.test(e.key); 
         if (isThai && this.state.keyboardLayout !== 'TH') { 
-            this.state.keyboardLayout = 'TH'; 
+            this.state.keyboardLayout = 'TH';
             this.updatePlaceholderHint(); 
         } else if (!isThai && this.state.keyboardLayout !== 'ENG') { 
-            this.state.keyboardLayout = 'ENG'; 
+            this.state.keyboardLayout = 'ENG';
             this.updatePlaceholderHint(); 
         } 
     },
@@ -1806,13 +1851,13 @@ const POS_APP = {
         }
     },
     handleGlobalKeyDown(e) { 
-        if (this.state.activeModalCloseHandler) return; 
+        if (this.state.activeModalCloseHandler) return;
         if (e.ctrlKey && (e.key === 'Tab' || e.key === 'ArrowRight' || e.key === 'ArrowLeft')) { 
-            e.preventDefault(); 
+            e.preventDefault();
             const direction = (e.shiftKey || e.key === 'ArrowLeft') ? -1 : 1; 
-            this.navigateTabs(direction); 
+            this.navigateTabs(direction);
         } else if (e.ctrlKey && e.key === 'w') { 
-            e.preventDefault(); 
+            e.preventDefault();
             if(this.state.activeTabId) this.closeTab(this.state.activeTabId); 
         } else if (e.key === 'Delete') { 
             e.preventDefault();
@@ -1823,18 +1868,18 @@ const POS_APP = {
                 this.closeTab(this.state.activeTabId, true);
             }
         } else if (e.key === 'F9') { 
-            e.preventDefault(); 
+            e.preventDefault();
             this.showPaymentModal(); 
         } else if (e.key === 'F11') { 
-            e.preventDefault(); 
+            e.preventDefault();
             document.getElementById('discount-input').focus(); 
             document.getElementById('discount-input').select(); 
         } else if (e.key === 'F2') { 
-            e.preventDefault(); 
+            e.preventDefault();
             this.addNewSaleTab(); 
         } 
         else if (e.key === 'F3') { 
-            e.preventDefault(); 
+            e.preventDefault();
             document.getElementById('barcode-input').focus(); 
         } else if (e.key === 'F5') {
             e.preventDefault();
@@ -1860,108 +1905,125 @@ const POS_APP = {
                 this.hideHistoryModal();
                 this.hideSettingsModal();
                 this.hideReceiptSettingsModal();
-            } else if (document.getElementById('payment-modal').style.display === 'flex') { e.preventDefault(); this.hidePaymentModal(); } 
-            else if (document.getElementById('delete-confirm-modal').style.display === 'flex') { e.preventDefault(); this.hideDeleteConfirmModal(); } 
-            else if (document.getElementById('clear-options-modal').style.display === 'flex') { e.preventDefault(); this.hideClearOptionsModal(); } 
-            else if (document.getElementById('product-mgmt-modal').style.display === 'flex') { e.preventDefault(); this.hideProductMgmtModal(); } 
-            else if (document.getElementById('product-editor-modal').style.display === 'flex') { e.preventDefault(); this.hideProductEditorModal(); } 
+            } else if (document.getElementById('payment-modal').style.display === 'flex') { e.preventDefault(); this.hidePaymentModal();
+            } 
+            else if (document.getElementById('delete-confirm-modal').style.display === 'flex') { e.preventDefault();
+            this.hideDeleteConfirmModal(); } 
+            else if (document.getElementById('clear-options-modal').style.display === 'flex') { e.preventDefault();
+            this.hideClearOptionsModal(); } 
+            else if (document.getElementById('product-mgmt-modal').style.display === 'flex') { e.preventDefault();
+            this.hideProductMgmtModal(); } 
+            else if (document.getElementById('product-editor-modal').style.display === 'flex') { e.preventDefault();
+            this.hideProductEditorModal(); } 
         } 
     },
     navigateSearchResults(direction) { 
-        if (this.state.currentSearchResults.length === 0) return; 
+        if (this.state.currentSearchResults.length === 0) return;
         this.state.selectedSearchIndex += direction; 
         if (this.state.selectedSearchIndex < 0) this.state.selectedSearchIndex = this.state.currentSearchResults.length - 1; 
-        else if (this.state.selectedSearchIndex >= this.state.currentSearchResults.length) this.state.selectedSearchIndex = 0; 
+        else if (this.state.selectedSearchIndex >= this.state.currentSearchResults.length) this.state.selectedSearchIndex = 0;
         this.updateSelectedSearchResult(); 
     },
     updateSelectedSearchResult() { 
-        const items = document.querySelectorAll('.search-item'); 
+        const items = document.querySelectorAll('.search-item');
         items.forEach((item, index) => { 
             if (index === this.state.selectedSearchIndex) { 
                 item.classList.add('selected'); 
                 item.scrollIntoView({ block: 'nearest' }); 
             } else { 
                 item.classList.remove('selected'); 
-            } 
-        }); 
+          
+             } 
+        });
     },
-    translateThaiToEng(input) { return input.split('').map(char => this.config.thaiToEngMap[char] || char).join(''); },
-    getActiveCart() { if (!this.state.activeTabId || !this.state.tabs.has(this.state.activeTabId)) return []; return this.state.tabs.get(this.state.activeTabId).cart; },
-    getActiveDiscount() { if (!this.state.activeTabId || !this.state.tabs.has(this.state.activeTabId)) return 0; return this.state.tabs.get(this.state.activeTabId).discount; },
-    setActiveDiscount(value) { if (this.state.activeTabId && this.state.tabs.has(this.state.activeTabId)) { this.state.tabs.get(this.state.activeTabId).discount = value; } },
+    translateThaiToEng(input) { return input.split('').map(char => this.config.thaiToEngMap[char] || char).join('');
+    },
+    getActiveCart() { if (!this.state.activeTabId || !this.state.tabs.has(this.state.activeTabId)) return []; return this.state.tabs.get(this.state.activeTabId).cart;
+    },
+    getActiveDiscount() { if (!this.state.activeTabId || !this.state.tabs.has(this.state.activeTabId)) return 0; return this.state.tabs.get(this.state.activeTabId).discount;
+    },
+    setActiveDiscount(value) { if (this.state.activeTabId && this.state.tabs.has(this.state.activeTabId)) { this.state.tabs.get(this.state.activeTabId).discount = value;
+    } },
     editItemQuantity(index, newQuantityString) { 
-        const cart = this.getActiveCart(); 
+        const cart = this.getActiveCart();
         const newQuantity = parseInt(newQuantityString, 10); 
         if (isNaN(newQuantity) || newQuantity <= 0) { 
-            cart.splice(index, 1); 
+            cart.splice(index, 1);
         } else { 
-            const item = cart[index]; 
+            const item = cart[index];
             if (item) {
                 item.quantity = newQuantity;
                 delete item.priceOverride;
             }
         } 
-        this.updateCartDisplay(); 
+        this.updateCartDisplay();
     },
-    deleteItemFromCart(index) { const cart = this.getActiveCart(); cart.splice(index, 1); this.updateCartDisplay(); },
+    deleteItemFromCart(index) { const cart = this.getActiveCart(); cart.splice(index, 1); this.updateCartDisplay();
+    },
     clearCart() { 
-        const tabData = this.state.tabs.get(this.state.activeTabId); 
+        const tabData = this.state.tabs.get(this.state.activeTabId);
         if (tabData && tabData.cart.length > 0) { 
-            tabData.cart = []; 
+            tabData.cart = [];
             tabData.discount = 0; 
             this.updateCartDisplay(); 
         } 
     },
     showClearCartConfirmModal() { 
-        const cart = this.getActiveCart(); 
+        const cart = this.getActiveCart();
         if (cart.length === 0) return; 
         const confirmBtn = document.getElementById('confirm-delete-btn'); 
         const confirmText = document.getElementById('delete-confirm-text'); 
-        confirmText.textContent = `คุณแน่ใจหรือไม่ว่าต้องการล้างตะกร้าสินค้าทั้งหมด?`; 
+        confirmText.textContent = `คุณแน่ใจหรือไม่ว่าต้องการล้างตะกร้าสินค้าทั้งหมด?`;
         confirmBtn.onclick = () => { this.clearCart(); this.hideDeleteConfirmModal(); }; 
         document.getElementById('delete-confirm-modal').style.display = 'flex'; 
-        confirmBtn.focus(); 
+        confirmBtn.focus();
     },
     updateCartOnInput(){ 
         const discountValue = parseFloat(document.getElementById('discount-input').value) || 0; 
-        this.setActiveDiscount(discountValue); 
+        this.setActiveDiscount(discountValue);
         this.updateCartDisplay(); 
     },
     showPaymentModal() { 
-        const cart = this.getActiveCart(); 
+        const cart = this.getActiveCart();
         if (cart.length === 0) return; 
         const subtotal = parseFloat(document.getElementById('cart-subtotal').textContent); 
         const discount = this.getActiveDiscount(); 
-        const finalTotal = subtotal - discount; 
+        const finalTotal = subtotal - discount;
         document.getElementById('payment-total-final').textContent = finalTotal.toFixed(2); 
         document.getElementById('payment-change').textContent = "0.00"; 
         const cashInput = document.getElementById('cash-received-input'); 
         cashInput.value = ''; 
         document.getElementById('payment-modal').style.display = 'flex'; 
-        cashInput.focus(); 
+        cashInput.focus();
     },
     hidePaymentModal() { 
         document.getElementById('payment-modal').style.display = 'none'; 
-        document.getElementById('barcode-input').focus(); 
+        document.getElementById('barcode-input').focus();
     },
     calculateChange() { 
-        const total = parseFloat(document.getElementById('payment-total-final').textContent); 
+        const total = parseFloat(document.getElementById('payment-total-final').textContent);
         const cashReceived = parseFloat(document.getElementById('cash-received-input').value) || 0; 
         const change = cashReceived - total; 
-        const changeEl = document.getElementById('payment-change'); 
+        const changeEl = document.getElementById('payment-change');
         if (change >= 0) { 
-            changeEl.textContent = change.toFixed(2); 
+            changeEl.textContent = change.toFixed(2);
             changeEl.style.color = 'var(--success-color)'; 
         } else { 
-            changeEl.textContent = 'เงินไม่พอ'; 
+            changeEl.textContent = 'เงินไม่พอ';
             changeEl.style.color = 'var(--danger-color)'; 
         } 
     },
 
     async confirmSale() {
         if (this.state.isSaving) return;
+
         const collectionRef = this.getSalesHistoryCollectionRef();
-        if (!collectionRef) { this.showInfoModal("ข้อผิดพลาด", "ยังไม่ได้เชื่อมต่อกับฐานข้อมูล กรุณารอสักครู่แล้วลองอีกครั้ง", true); return; }
+        // ✅ [MODIFIED] ตรวจสอบ `OfflineQueue` ก่อน เพื่อให้แน่ใจว่ามันถูกสร้างแล้ว
+        if (!collectionRef && !window.OfflineQueue) { 
+            this.showInfoModal("ข้อผิดพลาด", "ยังไม่ได้เชื่อมต่อกับฐานข้อมูลและไม่สามารถบันทึก Offline ได้", true); 
+            return;
+        }
+
         const tabData = this.state.tabs.get(this.state.activeTabId);
         if (!tabData) return;
         const { cart, discount } = tabData;
@@ -1973,10 +2035,14 @@ const POS_APP = {
         }, 0);
         const finalTotal = subtotal - discount;
         const cashReceived = parseFloat(document.getElementById('cash-received-input').value) || 0;
-        if (cashReceived < finalTotal) { this.showInfoModal("ข้อผิดพลาด", "จำนวนเงินที่รับมาไม่เพียงพอ", true); return; }
+        if (cashReceived < finalTotal) { 
+            this.showInfoModal("ข้อผิดพลาด", "จำนวนเงินที่รับมาไม่เพียงพอ", true);
+            return; 
+        }
         this.state.isSaving = true;
         const confirmButton = document.getElementById('confirm-sale-btn');
         confirmButton.disabled = true;
+        
         const newSaleId = await this.generateSaleId();
         const saleRecordItems = cart.map(item => {
             const conversionFactor = item.productUnit?.pricingUnit?.conversionFactor || 1;
@@ -1993,15 +2059,16 @@ const POS_APP = {
                 productId: item.productUnit.productId
             };
         });
+
         const saleRecord = {
             id: newSaleId, timestamp: new Date().toISOString(), items: saleRecordItems, subtotal: subtotal,
             discount: discount, total: finalTotal, cashReceived: cashReceived, change: cashReceived - finalTotal,
         };
-
+        
         const { api, db } = window.firebaseServices;
         const productsCollectionRef = this.getProductsCollectionRef();
         const batch = api.writeBatch(db);
-
+        
         for (const item of cart) {
             const productRef = api.doc(productsCollectionRef, item.productUnit.productId);
             const quantityInBaseUnits = item.quantity * (item.productUnit.pricingUnit.conversionFactor || 1);
@@ -2016,22 +2083,41 @@ const POS_APP = {
                 const newSaleRef = api.doc(collectionRef);
                 batch.delete(oldSaleRef);
                 batch.set(newSaleRef, saleRecord);
-                console.log(`Edited sale: Deleting old record and creating new one.`);
             } else {
                 const newSaleDocRef = api.doc(collectionRef);
                 batch.set(newSaleDocRef, saleRecord);
             }
             
             await batch.commit();
-            
+
             this.hidePaymentModal();
             const tabToDelete = this.state.activeTabId;
             document.getElementById('edit-status').style.display = 'none';
             this.closeTab(tabToDelete, false);
-            
+
         } catch (e) {
-            console.error("Error committing sale and updating stock: ", e);
-            this.showInfoModal("ผิดพลาด", "เกิดข้อผิดพลาดในการบันทึกข้อมูลการขายและอัปเดตสต็อก!", true);
+            console.error("Error committing sale, saving to offline queue: ", e);
+            
+            // ✅ [MODIFIED] ส่วนสำคัญ: ถ้า try-catch ล้มเหลว ให้บันทึกลง Offline Queue
+            if(window.OfflineQueue) {
+                window.OfflineQueue.push({
+                    type: 'sale',
+                    payload: saleRecord,
+                    tabData: { // บันทึกข้อมูล tab ที่กำลังแก้ไขไปด้วย
+                        isEditing: tabData.isEditing,
+                        originalFirestoreId: tabData.originalFirestoreId
+                    }
+                });
+                this.showInfoModal("บันทึก Offline", "ไม่สามารถเชื่อมต่อฐานข้อมูลได้ บันทึกการขายนี้ไว้ในเครื่องแล้ว และจะส่งข้อมูลอีกครั้งเมื่อออนไลน์", false);
+                
+                // ปิดบิลและ Modal เหมือนกรณีสำเร็จ
+                this.hidePaymentModal();
+                const tabToDelete = this.state.activeTabId;
+                document.getElementById('edit-status').style.display = 'none';
+                this.closeTab(tabToDelete, false);
+            } else {
+                this.showInfoModal("ผิดพลาด", "เกิดข้อผิดพลาดในการบันทึกข้อมูลการขายและอัปเดตสต็อก!", true);
+            }
         } finally {
             this.state.isSaving = false;
             confirmButton.disabled = false;
@@ -2060,33 +2146,38 @@ const POS_APP = {
                 margin: 0; 
                 padding: 15px; 
                 font-size: 10pt; 
-                line-height: 1.5;
+             
+                   line-height: 1.5;
                 background-color: #fff;
                 color: #000;
             }
             .receipt-container { 
                 width: 100%; 
                 max-width: 320px; 
+
                 margin: auto; 
             }
             .header {
                 text-align: center;
                 margin-bottom: 15px;
             }
-            .header h2 {
+           
+             .header h2 {
                 margin: 0;
                 font-size: 1.4em;
             }
             .header p {
                 margin: 2px 0;
                 font-size: 0.9em;
-            }
+  
+                     }
             .info-table, .summary-table {
                 width: 100%;
                 font-size: 0.9em;
             }
             .info-table td:last-child, .summary-table td:last-child {
-                text-align: right;
+              
+                 text-align: right;
             }
             .items-table {
                 width: 100%;
@@ -2132,7 +2223,6 @@ const POS_APP = {
             }
         `);
         receiptWindow.document.write('</style></head><body>');
-
         const itemsHtml = saleRecord.items.map(item => `
             <tr>
                 <td class="item-name">${this.escapeHtml(item.name)}</td>
@@ -2140,63 +2230,78 @@ const POS_APP = {
                 <td class="item-details">${(item.quantity * item.price).toFixed(2)}</td>
             </tr>
         `).join('');
-
         const receiptContent = `
             <div class="receipt-container">
                 <div class="header">
-                    <h2>${this.escapeHtml(storeName) || 'ชื่อร้านค้า'}</h2>
-                    <p>${this.escapeHtml(address) || 'ที่อยู่'}</p>
-                    <p>${this.escapeHtml(phone) ? 'โทร: ' + this.escapeHtml(phone) : ''}</p>
-                    <p>${this.escapeHtml(taxId) ? 'เลขประจำตัวผู้เสียภาษี: ' + this.escapeHtml(taxId) : ''}</p>
+                    <h2>${this.escapeHtml(storeName) ||
+                    'ชื่อร้านค้า'}</h2>
+                    <p>${this.escapeHtml(address) ||
+                    'ที่อยู่'}</p>
+                    <p>${this.escapeHtml(phone) ?
+                    'โทร: ' + this.escapeHtml(phone) : ''}</p>
+                    <p>${this.escapeHtml(taxId) ?
+                    'เลขประจำตัวผู้เสียภาษี: ' + this.escapeHtml(taxId) : ''}</p>
                 </div>
 
                 <table class="info-table">
                     <tr>
                         <td>เลขที่ใบเสร็จ:</td>
-                        <td>${saleRecord.id}</td>
+                  
+                     <td>${saleRecord.id}</td>
                     </tr>
                     <tr>
                         <td>วันที่:</td>
                         <td>${new Date(saleRecord.timestamp).toLocaleString('th-TH')}</td>
-                    </tr>
+     
+                                   </tr>
                 </table>
 
                 <table class="items-table">
                         <thead>
-                                <tr>
+                            
+                             <tr>
                                     <th>รายการ</th>
                                     <th>จำนวน</th>
-                                    <th>ราคา</th>
+                        
+                             <th>ราคา</th>
                                 </tr>
                 </thead>
                 <tbody>
                     ${itemsHtml}
-                </tbody>
+    
+                         </tbody>
                 </table>
                 
                 <div class="summary-section">
                     <table class="summary-table">
-                            <tr>
+                  
+                         <tr>
                                 <td>รวมเป็นเงิน</td>
                                 <td>${saleRecord.subtotal.toFixed(2)}</td>
-                            </tr>
+                          
+                   </tr>
                             <tr>
                                 <td>ส่วนลด</td>
                                 <td>${saleRecord.discount.toFixed(2)}</td>
-                            </tr>
+      
+                                     </tr>
                             <tr class="total-row">
                                 <td>ยอดสุทธิ</td>
-                                <td>${saleRecord.total.toFixed(2)}</td>
+                 
+                               <td>${saleRecord.total.toFixed(2)}</td>
                             </tr>
                              <tr>
-                                <td>รับเงินสด</td>
+                            
+                             <td>รับเงินสด</td>
                                 <td>${saleRecord.cashReceived.toFixed(2)}</td>
                             </tr>
                              <tr>
-                                <td>เงินทอน</td>
+       
+                                     <td>เงินทอน</td>
                                 <td>${saleRecord.change.toFixed(2)}</td>
                             </tr>
-                    </table>
+               
+                 </table>
                 </div>
 
                 <div class="footer">
@@ -2204,7 +2309,6 @@ const POS_APP = {
                 </div>
             </div>
         `;
-
         receiptWindow.document.write(receiptContent);
         receiptWindow.document.write('</body></html>');
         receiptWindow.document.close();
@@ -2213,11 +2317,12 @@ const POS_APP = {
         setTimeout(() => {
             receiptWindow.print();
             receiptWindow.close();
-        }, 250); 
+        }, 250);
     },
     
     async editSaleRecord(firestoreId) {
-        if (this.state.tabs.size >= 5) { this.showInfoModal("ไม่สามารถแก้ไข", "เปิดบิลครบ 5 บิลแล้ว ไม่สามารถเปิดบิลเพื่อแก้ไขได้", true); return; }
+        if (this.state.tabs.size >= 5) { this.showInfoModal("ไม่สามารถแก้ไข", "เปิดบิลครบ 5 บิลแล้ว ไม่สามารถเปิดบิลเพื่อแก้ไขได้", true);
+        return; }
         const saleToEdit = this.state.salesHistory.find(s => s.firestoreId === firestoreId);
         if (!saleToEdit) { this.showInfoModal("ผิดพลาด", "ไม่พบข้อมูลการขายที่ต้องการแก้ไข", true); return; }
         const newCart = [];
@@ -2235,8 +2340,10 @@ const POS_APP = {
                 missingItems.push(item.name);
             }
         }
-        if (missingItems.length > 0) { this.showInfoModal("คำเตือน", `ไม่พบสินค้าบางรายการในระบบปัจจุบันและจะไม่ถูกเพิ่มในตะกร้า:\n- ${missingItems.join('\n- ')}`); }
-        if (newCart.length === 0) { this.showInfoModal("ผิดพลาด", "ไม่สามารถนำรายการสินค้าในบิลเก่ามาแก้ไขได้ทั้งหมด", true); return; }
+        if (missingItems.length > 0) { this.showInfoModal("คำเตือน", `ไม่พบสินค้าบางรายการในระบบปัจจุบันและจะไม่ถูกเพิ่มในตะกร้า:\n- ${missingItems.join('\n- ')}`);
+        }
+        if (newCart.length === 0) { this.showInfoModal("ผิดพลาด", "ไม่สามารถนำรายการสินค้าในบิลเก่ามาแก้ไขได้ทั้งหมด", true); return;
+        }
         const tabId = this.addNewSaleTab(`บิลแก้ไข #${saleToEdit.id.slice(-4)}`);
         const tabData = this.state.tabs.get(tabId);
         tabData.cart = newCart;
@@ -2249,50 +2356,51 @@ const POS_APP = {
         this.hideHistoryModal();
     },
     showDeleteConfirmModal(id, isTab) { 
-        const confirmBtn = document.getElementById('confirm-delete-btn'); 
+        const confirmBtn = document.getElementById('confirm-delete-btn');
         const confirmText = document.getElementById('delete-confirm-text'); 
         if (isTab) { 
-            const tabData = this.state.tabs.get(id); 
+            const tabData = this.state.tabs.get(id);
             confirmText.textContent = `คุณแน่ใจหรือไม่ว่าต้องการปิดบิล '${tabData.name}'?`; 
-            confirmBtn.onclick = () => { this.closeTab(id, false); this.hideDeleteConfirmModal(); }; 
+            confirmBtn.onclick = () => { this.closeTab(id, false); this.hideDeleteConfirmModal(); };
         } else { 
-            const sale = this.state.salesHistory.find(s => s.firestoreId === id); 
+            const sale = this.state.salesHistory.find(s => s.firestoreId === id);
             confirmText.textContent = `คุณแน่ใจหรือไม่ว่าต้องการลบรายการขาย ID: ${sale ? sale.id : id}? การกระทำนี้ไม่สามารถย้อนกลับได้`; 
-            confirmBtn.onclick = () => this.executeDeleteSaleFromHistory(id); 
+            confirmBtn.onclick = () => this.executeDeleteSaleFromHistory(id);
         } 
         document.getElementById('delete-confirm-modal').style.display = 'flex'; 
-        setTimeout(() => confirmBtn.focus(), 50); 
+        setTimeout(() => confirmBtn.focus(), 50);
     },
     hideDeleteConfirmModal() { document.getElementById('delete-confirm-modal').style.display = 'none'; },
     async executeDeleteSaleFromHistory(firestoreId) { 
-        const {api, db} = window.firebaseServices; 
+        const {api, db} = window.firebaseServices;
         const docRef = api.doc(db, this.getSalesHistoryCollectionRef().path, firestoreId); 
         this.hideDeleteConfirmModal(); 
         try { 
-            await api.deleteDoc(docRef); 
+            await api.deleteDoc(docRef);
             console.log("Deleted sale record:", firestoreId); 
         } catch (e) { 
-            console.error("Error deleting document: ", e); 
+            console.error("Error deleting document: ", e);
             this.showInfoModal("ผิดพลาด", "เกิดข้อผิดพลาดในการลบข้อมูล!", true); 
         } 
     },
-    showClearOptionsModal() { document.getElementById('clear-options-modal').style.display = 'flex'; },
+    showClearOptionsModal() { document.getElementById('clear-options-modal').style.display = 'flex';
+    },
     hideClearOptionsModal() { document.getElementById('clear-options-modal').style.display = 'none'; },
     clearHistoryLocally() { 
-        this.state.salesHistory = []; 
+        this.state.salesHistory = [];
         this.updateHistoryDisplay(); 
         this.hideClearOptionsModal(); 
     },
     async executeClearAllHistory() { 
-        this.hideClearOptionsModal(); 
+        this.hideClearOptionsModal();
         const salesCollection = this.getSalesHistoryCollectionRef(); 
         try { 
-            const querySnapshot = await window.firebaseServices.api.getDocs(salesCollection); 
+            const querySnapshot = await window.firebaseServices.api.getDocs(salesCollection);
             const batch = window.firebaseServices.api.writeBatch(window.firebaseServices.db); 
             querySnapshot.forEach((doc) => { batch.delete(doc.ref); }); 
-            await batch.commit(); 
+            await batch.commit();
         } catch (e) { 
-            this.showInfoModal("ผิดพลาด", "เกิดข้อผิดพลาดในการล้างประวัติทั้งหมด!", true); 
+            this.showInfoModal("ผิดพลาด", "เกิดข้อผิดพลาดในการล้างประวัติทั้งหมด!", true);
         } 
     },
     updateHistoryDisplay() {
@@ -2315,16 +2423,19 @@ const POS_APP = {
                 const saleTimestamp = new Date(sale.timestamp);
                 if (saleTimestamp < startOfCurrentHour) {
                     row.classList.add('exported-row');
-                    row.title = 'รายการนี้ถูก Export แล้วโดยระบบอัตโนมัติ';
+     
+                                   row.title = 'รายการนี้ถูก Export แล้วโดยระบบอัตโนมัติ';
                 }
                 let itemDetails = sale.items.map(item => {
                     let name = this.escapeHtml(item.name);
-                    return `${name} (x${item.quantity})`;
+                    return 
+                    `${name} (x${item.quantity})`;
                 }).join('<br>');
                 const discountAmount = sale.discount ? sale.discount.toFixed(2) : '0.00';
                 
                 let adminActions = `<button type="button" class="edit-history-btn" onclick="POS_APP.editSaleRecord('${sale.firestoreId}')">แก้ไข</button><button type="button" class="delete-history-btn" onclick="POS_APP.showDeleteConfirmModal('${sale.firestoreId}', false)">ลบ</button>`;
-                let actionCellHTML = `<button type="button" class="print-history-btn" onclick="POS_APP.printSaleRecordFromHistory('${sale.firestoreId}')">พิมพ์</button>`;
+                let actionCellHTML 
+                = `<button type="button" class="print-history-btn" onclick="POS_APP.printSaleRecordFromHistory('${sale.firestoreId}')">พิมพ์</button>`;
                 
                 if (!this.state.isRestrictedMode) {
                     actionCellHTML += adminActions;
@@ -2345,12 +2456,13 @@ const POS_APP = {
             netSales += sale.total || 0; 
             if (sale.items && Array.isArray(sale.items)) { 
                 sale.items.forEach(item => { 
-                    totalCost += (item.cost || 0) * (item.quantity || 0); 
+          
+                     totalCost += (item.cost || 0) * (item.quantity || 0); 
                 }); 
             } 
-        }); 
+        });
         const billCount = displayedSales.length; 
-        const profit = netSales - totalCost; 
+        const profit = netSales - totalCost;
         const formatCurrency = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
         
         document.getElementById('summary-total-sales').textContent = formatCurrency(totalSales);
@@ -2368,15 +2480,17 @@ const POS_APP = {
             summarySection.style.display = shouldShow ? 'block' : 'none';
         }
         this.updateHistoryDisplay();
-        this.updateCartDisplay(); 
+        this.updateCartDisplay();
     },
     addNewSaleTab(customName = '') {
-        if (this.state.tabs.size >= 5) { this.showInfoModal("ไม่สามารถเปิดบิล", "ไม่สามารถเปิดบิลใหม่ได้เกิน 5 บิล", false); return null; }
+        if (this.state.tabs.size >= 5) { this.showInfoModal("ไม่สามารถเปิดบิล", "ไม่สามารถเปิดบิลใหม่ได้เกิน 5 บิล", false);
+        return null; }
         let tabName = customName;
         if (!tabName) {
             let nextSaleNumber = 1;
             const usedNumbers = Array.from(this.state.tabs.values()).map(t => t.name ? parseInt(t.name.split(' ')[1]) : 0);
-            while(usedNumbers.includes(nextSaleNumber)) { nextSaleNumber++; }
+            while(usedNumbers.includes(nextSaleNumber)) { nextSaleNumber++;
+            }
             tabName = `บิล ${nextSaleNumber}`;
         }
         const tabId = 'sale-' + Date.now();
@@ -2387,7 +2501,7 @@ const POS_APP = {
     },
     switchTab(tabId) { 
         if (!this.state.tabs.has(tabId)) return; 
-        this.state.activeTabId = tabId; 
+        this.state.activeTabId = tabId;
         this.renderTabs(); 
         this.updateCartDisplay(); 
         document.getElementById('barcode-input').focus(); 
@@ -2396,7 +2510,8 @@ const POS_APP = {
         const tabData = this.state.tabs.get(tabId);
         if (!tabData) return;
         if (tabData.isEditing) { document.getElementById('edit-status').style.display = 'none'; }
-        if (confirm && tabData.cart.length > 0) { this.showDeleteConfirmModal(tabId, true); return; }
+        if (confirm && tabData.cart.length > 0) { this.showDeleteConfirmModal(tabId, true);
+        return; }
         this.state.tabs.delete(tabId);
         if (this.state.activeTabId === tabId) {
             const remainingTabs = Array.from(this.state.tabs.keys());
@@ -2409,10 +2524,10 @@ const POS_APP = {
         this.renderTabs();
     },
     renderTabs() { 
-        const tabsContainer = document.getElementById('cart-tabs'); 
+        const tabsContainer = document.getElementById('cart-tabs');
         if (!tabsContainer) return; 
         tabsContainer.innerHTML = ''; 
-        const self = this; 
+        const self = this;
         this.state.tabs.forEach((data, id) => { 
             const tabButton = document.createElement('button'); 
             tabButton.type = 'button';
@@ -2420,34 +2535,38 @@ const POS_APP = {
             tabButton.textContent = data.name; 
             tabButton.onclick = () => self.switchTab(id); 
             if (id === this.state.activeTabId) { tabButton.classList.add('active'); } 
+
             if (this.state.tabs.size > 1) { 
                 const closeButton = document.createElement('button'); 
                 closeButton.type = 'button';
                 closeButton.className = 'close-tab-btn'; 
                 closeButton.textContent = '×';
-                closeButton.onclick = (e) => { e.stopPropagation(); self.closeTab(id); }; 
+        
+                 closeButton.onclick = (e) => { e.stopPropagation(); self.closeTab(id); }; 
                 tabButton.appendChild(closeButton); 
             } 
             tabsContainer.appendChild(tabButton); 
-        }); 
+        });
     },
     navigateTabs(direction) { 
-        const tabKeys = Array.from(this.state.tabs.keys()); 
+        const tabKeys = Array.from(this.state.tabs.keys());
         if(tabKeys.length <= 1) return; 
         let currentIndex = tabKeys.indexOf(this.state.activeTabId); 
         currentIndex += direction; 
-        if (currentIndex >= tabKeys.length) { currentIndex = 0; } 
-        else if (currentIndex < 0) { currentIndex = tabKeys.length - 1; } 
-        this.switchTab(tabKeys[currentIndex]); 
+        if (currentIndex >= tabKeys.length) { currentIndex = 0;
+        } 
+        else if (currentIndex < 0) { currentIndex = tabKeys.length - 1;
+        } 
+        this.switchTab(tabKeys[currentIndex]);
     },
-filterHistoryByDateTime() { 
+    filterHistoryByDateTime() { 
         const startDateInput = document.getElementById('start-date').value; 
         const startTimeInput = document.getElementById('start-time').value;
         const endDateInput = document.getElementById('end-date').value; 
         const endTimeInput = document.getElementById('end-time').value;
 
         if (!startDateInput || !endDateInput) { 
-            this.showInfoModal("ข้อมูลไม่ครบถ้วน", "กรุณาเลือกทั้งวันที่เริ่มต้นและวันที่สิ้นสุด", false); 
+            this.showInfoModal("ข้อมูลไม่ครบถ้วน", "กรุณาเลือกทั้งวันที่เริ่มต้นและวันที่สิ้นสุด", false);
             return; 
         } 
 
@@ -2457,33 +2576,32 @@ filterHistoryByDateTime() {
         const startDateTime = new Date(`${startDateInput}T${startTime}`);
         const endDateTime = new Date(`${endDateInput}T${endTime}`);
 
-        this.loadSalesHistoryFromFirestore(startDateTime.toISOString(), endDateTime.toISOString()); 
+        this.loadSalesHistoryFromFirestore(startDateTime.toISOString(), endDateTime.toISOString());
     },
     filterHistoryForToday() { 
-        const todayStart = new Date(); 
+        const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0); 
         const todayEnd = new Date(); 
         todayEnd.setHours(23, 59, 59, 999); 
 
         document.getElementById('start-date').valueAsDate = todayStart;
         document.getElementById('end-date').valueAsDate = todayEnd;
-        
         document.getElementById('start-time').value = '00:00';
         document.getElementById('end-time').value = '23:59';
 
         document.getElementById('history-search-input').value = '';
-        this.loadSalesHistoryFromFirestore(todayStart.toISOString(), todayEnd.toISOString()); 
+        this.loadSalesHistoryFromFirestore(todayStart.toISOString(), todayEnd.toISOString());
     },
     loadSalesHistoryFromFirestore(startDate, endDate) { 
-        const historyCollectionRef = this.getSalesHistoryCollectionRef(); 
+        const historyCollectionRef = this.getSalesHistoryCollectionRef();
         if (!historyCollectionRef) return; 
         if (this.state.unsubscribeSalesHistory) { this.state.unsubscribeSalesHistory(); } 
-        const { query, where } = window.firebaseServices.api; 
+        const { query, where } = window.firebaseServices.api;
         let q; 
         if (startDate && endDate) { 
-            q = query(historyCollectionRef, where("timestamp", ">=", startDate), where("timestamp", "<=", endDate) ); 
+            q = query(historyCollectionRef, where("timestamp", ">=", startDate), where("timestamp", "<=", endDate) );
         } else { 
-            q = query(historyCollectionRef); 
+            q = query(historyCollectionRef);
         } 
         this.state.unsubscribeSalesHistory = window.firebaseServices.api.onSnapshot(q, (querySnapshot) => { 
             const newHistory = []; 
@@ -2491,18 +2609,19 @@ filterHistoryByDateTime() {
             this.state.salesHistory = newHistory.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); 
             this.updateHistoryDisplay(); 
         }, (error) => { 
-            console.error("Error loading sales history:", error); 
+ 
+                   console.error("Error loading sales history:", error); 
             if (error.code === 'permission-denied') { this.showInfoModal("ข้อผิดพลาด Firestore", "การเชื่อมต่อ Firestore ล้มเหลว! (permission-denied)", true); } 
-        }); 
+        });
     },
     async generateSaleId() { 
-        const today = new Date(); 
+        const today = new Date();
         const datePrefix = `${today.getFullYear()}${(today.getMonth() + 1).toString().padStart(2, '0')}${today.getDate().toString().padStart(2, '0')}`; 
         if (this.state.lastSaleDate !== datePrefix) { 
-            this.state.dailySaleCounter = 0; 
+            this.state.dailySaleCounter = 0;
             this.state.lastSaleDate = datePrefix; 
         } 
-        const todaySalesInHistory = this.state.salesHistory.filter(sale => sale.id && sale.id.startsWith(datePrefix)); 
+        const todaySalesInHistory = this.state.salesHistory.filter(sale => sale.id && sale.id.startsWith(datePrefix));
         this.state.dailySaleCounter = todaySalesInHistory.length + 1; 
         return `${datePrefix}-${this.state.dailySaleCounter.toString().padStart(4, '0')}`; 
     },
@@ -2511,16 +2630,20 @@ filterHistoryByDateTime() {
             sale.items.map(item => {
                 let productName = item.name, unit = item.unit, quantity = item.quantity, pricePerBaseUnit = 'N/A', costPerBaseUnit = 'N/A';
                 if (item.conversionFactor && item.baseUnit) {
-                    productName = item.productName;
+          
+                         productName = item.productName;
                     unit = item.baseUnit;
                     quantity = item.quantity * item.conversionFactor;
                     pricePerBaseUnit = (item.price / item.conversionFactor).toFixed(4);
-                    costPerBaseUnit = (item.costPerBaseUnit || 0).toFixed(4);
+                  
+                     costPerBaseUnit = (item.costPerBaseUnit || 0).toFixed(4);
                 } else {
                     const fullProductUnit = this.state.searchableProductUnits.find(p => p.cartItemId === item.cartItemId);
                     if (fullProductUnit && fullProductUnit.pricingUnit) {
-                        const conversionFactor = fullProductUnit.pricingUnit.conversionFactor || 1;
-                        const costPerSellingUnit = fullProductUnit.pricingUnit.cost || 0;
+                        const 
+                        conversionFactor = fullProductUnit.pricingUnit.conversionFactor || 1;
+                        const costPerSellingUnit = fullProductUnit.pricingUnit.cost ||
+                        0;
                         productName = fullProductUnit.productName;
                         unit = fullProductUnit.baseUnit;
                         quantity = item.quantity * conversionFactor;
@@ -2530,13 +2653,16 @@ filterHistoryByDateTime() {
                 }
                 return {
                     'รหัสการขาย': sale.id, 'วันที่': new Date(sale.timestamp).toLocaleDateString('th-TH'), 'เวลา': new Date(sale.timestamp).toLocaleTimeString('th-TH'),
-                    'ยอดรวมก่อนลด': sale.subtotal ? sale.subtotal.toFixed(2) : '0.00', 'ส่วนลด': sale.discount ? sale.discount.toFixed(2) : '0.00',
-                    'ยอดสุทธิ': sale.total ? sale.total.toFixed(2) : '0.00', 'สินค้า': productName, 'หน่วย': unit, 'จำนวน (หน่วยเล็กที่สุด)': quantity,
+                    'ยอดรวมก่อนลด': sale.subtotal ?
+                    sale.subtotal.toFixed(2) : '0.00', 'ส่วนลด': sale.discount ? sale.discount.toFixed(2) : '0.00',
+                    'ยอดสุทธิ': sale.total ?
+                    sale.total.toFixed(2) : '0.00', 'สินค้า': productName, 'หน่วย': unit, 'จำนวน (หน่วยเล็กที่สุด)': quantity,
                     'มูลค่ารวม (รายการนี้)': (item.price * item.quantity).toFixed(2), 'ราคาต่อหน่วยเล็กที่สุด': pricePerBaseUnit, 'ต้นทุนต่อหน่วยเล็กที่สุด': costPerBaseUnit
                 };
             })
         );
-        if (dataToExport.length === 0) { this.showInfoModal("ไม่มีข้อมูล", "ไม่มีข้อมูลประวัติการขายให้ Export", false); return; }
+        if (dataToExport.length === 0) { this.showInfoModal("ไม่มีข้อมูล", "ไม่มีข้อมูลประวัติการขายให้ Export", false); return;
+        }
         const worksheet = XLSX.utils.json_to_sheet(dataToExport);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'ประวัติการขาย (หน่วยเล็ก)');
@@ -2590,264 +2716,72 @@ filterHistoryByDateTime() {
         document.getElementById('receipt-settings-modal').style.display = 'none';
     },
 
+    // ✅ [NEW] ฟังก์ชันใหม่สำหรับ Sync ข้อมูลตอนกลับมา Online
+    async syncOfflineSales() {
+        if (!window.OfflineQueue) return;
+        
+        console.log("Connection restored. Attempting to sync offline sales...");
+        this.showInfoModal("กำลังเชื่อมต่อ...", "กลับมาออนไลน์แล้ว กำลังส่งข้อมูลการขายที่ค้างอยู่...", false);
+
+        const { api, db } = window.firebaseServices;
+        const salesCollectionRef = this.getSalesHistoryCollectionRef();
+        const productsCollectionRef = this.getProductsCollectionRef();
+
+        // ใช้ Handler เพื่อจัดการกับแต่ละ item ใน Queue
+        window.OfflineQueue.flush(async (op) => {
+            if (op.type === 'sale') {
+                const saleRecord = op.payload;
+                const tabData = op.tabData;
+                
+                try {
+                    const batch = api.writeBatch(db);
+
+                    // อัปเดตสต็อกสินค้า
+                    for (const item of saleRecord.items) {
+                        const productRef = api.doc(productsCollectionRef, item.productId);
+                        // ดึงข้อมูลสต็อกล่าสุดก่อนอัปเดต (เพื่อความปลอดภัย)
+                        const productSnap = await api.getDoc(productRef);
+                        if (productSnap.exists()) {
+                            const currentStock = productSnap.data().stockInBaseUnits || 0;
+                            const quantityInBaseUnits = item.quantity * (item.conversionFactor || 1);
+                            const newStock = currentStock - quantityInBaseUnits;
+                            batch.update(productRef, { stockInBaseUnits: newStock });
+                        }
+                    }
+
+                    // สร้าง/แก้ไขบิล
+                    if (tabData.isEditing && tabData.originalFirestoreId) {
+                        const oldSaleRef = api.doc(db, salesCollectionRef.path, tabData.originalFirestoreId);
+                        const newSaleRef = api.doc(salesCollectionRef);
+                        batch.delete(oldSaleRef);
+                        batch.set(newSaleRef, saleRecord);
+                    } else {
+                        const newSaleDocRef = api.doc(salesCollectionRef);
+                        batch.set(newSaleDocRef, saleRecord);
+                    }
+
+                    await batch.commit();
+                    console.log(`Successfully synced offline sale ID: ${saleRecord.id}`);
+
+                } catch (syncError) {
+                    console.error(`Failed to sync offline sale ID: ${saleRecord.id}`, syncError);
+                    // หากล้มเหลวอีกครั้ง ให้ push กลับเข้าไปใน Queue เพื่อลองใหม่ครั้งหน้า
+                    window.OfflineQueue.push(op);
+                }
+            }
+        });
+
+        // หน่วงเวลาเล็กน้อยแล้วซ่อน Modal
+        setTimeout(() => {
+           this.hideInfoModal();
+        }, 2500);
+    }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
     window.POS_APP = POS_APP;
     POS_APP.init();
 });
-</script>
-
-</body>
-</html>
-
-/* === PATCH APPLIED: POS Enhancements (15 items) — 2025-10-03 11:19:51 ===
-Summary:
-1) Keyboard: block F5, add Ctrl+H / F6, non-conflicting shortcuts
-2) Money format: Intl.NumberFormat('th-TH'); integer cents helpers
-3) XSS guard: avoid innerHTML for product names via safe renderer
-4) Instant search debounce and scanner-mode detection
-5) Virtual list for long lists (attribute: data-virtual-list)
-6) Modal focus trap, Esc/Enter controls, ARIA roles
-7) WCAG: contrast and reduced-motion media queries
-8) Passive scroll/touch listeners; cache DOM queries
-9) Totals with integer cents to avoid FP drift
-10) Firebase client safety helpers (scoped paths)
-11) PWA basics: SW register; resilient offline queue
-12) 58mm print CSS profile
-13) Live shortcut hint overlay
-14) Lightweight module split stubs + JSDoc typedefs
-15) Safe delete with confirm + reason logging
-=== END SUMMARY === */
-
-<!-- POS PATCH START -->
-<style>
-
-/* ====== 12b) Optional UI tweaks for better contrast ====== */
-:root{ --btn-sec-fg:#222; --btn-sec-bg:#e8e8e8; }
-.btn-secondary{ color:var(--btn-sec-fg); background:var(--btn-sec-bg); }
-
-</style>
-<script>
-
-;(function(){
-  'use strict';
-
-  // ====== 2) Money and integer-cents helpers ======
-  const TH_MONEY_FMT = new Intl.NumberFormat('th-TH', { minimumFractionDigits:2, maximumFractionDigits:2 });
-  function toCents(n){ n = Number(n||0); return Math.round(n*100); }
-  function fromCents(c){ return Number(c||0)/100; }
-  function money(n){ return TH_MONEY_FMT.format(Number(n||0)); }
-
-  // ====== 1) Keyboard shortcuts (safe, non-conflicting) ======
-  const KEY = {
-    is(e, code){ return (e.code===code || e.key===code); }
-  };
-  window.addEventListener('keydown', function(e){
-    // Block F5 refresh inside app containers if present
-    if (KEY.is(e,'F5')){
-      const inPOS = !!document.querySelector('#pos-root, .pos-root');
-      if (inPOS){ e.preventDefault(); /* swallow refresh to avoid data loss */ }
-    }
-    // History modal: Ctrl+H
-    if (e.ctrlKey && (e.key||'').toLowerCase()==='h'){
-      e.preventDefault();
-      if (window.POS_APP?.showHistoryModal) POS_APP.showHistoryModal();
-      else document.dispatchEvent(new CustomEvent('pos:history'));
-    }
-    // F6 alternate action
-    if (KEY.is(e,'F6')){
-      e.preventDefault();
-      document.dispatchEvent(new CustomEvent('pos:focus-search'));
-      const box = document.querySelector('#barcodeInput, #search, input[name=search]');
-      if (box){ box.focus(); box.select?.(); }
-    }
-  }, {capture:true});
-
-  // ====== 3) Safe cart item name rendering ======
-  function renderCartItemElementSafe(item){
-    const li = document.createElement('li');
-    li.className = 'cart-item-row';
-    const name = document.createElement('span'); name.className='col-name'; name.textContent = String(item?.name ?? '');
-    const seq = document.createElement('span'); seq.className='col-seq';
-    const qty = document.createElement('span'); qty.className='col-qty'; qty.textContent = String(item?.qty ?? 0);
-    const price = document.createElement('span'); price.className='col-price'; price.textContent = money(item?.price);
-    const total = document.createElement('span'); total.className='col-total'; total.textContent = money((item?.qty||0)*(item?.price||0));
-    const del = document.createElement('span'); del.className='col-delete';
-    const btn = document.createElement('button'); btn.className='delete-item-btn'; btn.type='button'; btn.textContent='x';
-    del.appendChild(btn);
-    li.append(seq, name, qty, price, total, del);
-    return li;
-  }
-  // Monkey-patch if app exposes renderer
-  if (window.POS_APP && typeof POS_APP.renderCartItemElement === 'function'){
-    const old = POS_APP.renderCartItemElement.bind(POS_APP);
-    POS_APP.renderCartItemElement = function(item){
-      try { return renderCartItemElementSafe(item); } catch(e){ return old(item); }
-    };
-  }
-
-  // ====== 4) Debounced instant search + scanner detection ======
-  function debounce(fn,t=120){ let h; return (...a)=>{ clearTimeout(h); h=setTimeout(()=>fn(...a),t); }; }
-  (function(){
-    const input = document.querySelector('#barcodeInput, #search, input[name=search]');
-    if (!input) return;
-    let lastTime = 0;
-    input.addEventListener('input', debounce((e)=>{
-      const now = performance.now();
-      const delta = now - lastTime;
-      lastTime = now;
-      const value = e.target.value || '';
-      const isScanner = value.length>3 && delta < 30; // very fast bursts
-      const detail = { value, isScanner };
-      document.dispatchEvent(new CustomEvent('pos:instant-search', { detail }));
-      if (window.POS_APP?.handleInstantSearch) POS_APP.handleInstantSearch(detail);
-    }, 120));
-  })();
-
-  // ====== 5) Virtual list (simple windowing) ======
-  class VirtualList {
-    constructor(root, rowHeight=36, overscan=6){
-      this.root = root; this.rowHeight=rowHeight; this.overscan=overscan;
-      this.container = root.querySelector('.vl-container') || document.createElement('div');
-      this.container.className='vl-container'; if (!this.container.parentNode) root.appendChild(this.container);
-      this.data = [];
-      this.onRender = (d,i)=>{
-        const div = document.createElement('div');
-        div.textContent = JSON.stringify(d);
-        return div;
-      };
-      this.attach();
-    }
-    setData(arr){ this.data = Array.isArray(arr)?arr:[]; this.totalHeight = this.data.length*this.rowHeight; this.render(); }
-    attach(){
-      this.root.addEventListener('scroll', ()=>this.render(), {passive:true});
-      window.addEventListener('resize', ()=>this.render());
-    }
-    render(){
-      const top = this.root.scrollTop|0;
-      const height = this.root.clientHeight|0;
-      const start = Math.max(0, ((top/this.rowHeight)|0)-this.overscan);
-      const end = Math.min(this.data.length, (((top+height)/this.rowHeight)|0)+this.overscan);
-      const offset = start*this.rowHeight;
-      this.container.style.paddingTop = offset+'px';
-      this.container.style.height = (this.totalHeight - offset)+'px';
-      // recycle
-      this.container.innerHTML='';
-      for (let i=start;i<end;i++){
-        this.container.appendChild(this.onRender(this.data[i], i));
-      }
-    }
-  }
-  // auto-init on elements with data-virtual-list
-  document.querySelectorAll('[data-virtual-list]').forEach(el=>{ el.__vl = new VirtualList(el); });
-
-  // ====== 6) Focus trap for modals ======
-  function trapFocus(modal){
-    modal.setAttribute('role','dialog'); modal.setAttribute('aria-modal','true');
-    const sel = 'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])';
-    const foci = ()=>Array.from(modal.querySelectorAll(sel));
-    function onKey(e){
-      if (e.key==='Escape'){ e.preventDefault(); modal.dispatchEvent(new CustomEvent('modal:close')); }
-      if (e.key!=='Tab') return;
-      const list = foci(); if (!list.length) return;
-      const first = list[0], last = list[list.length-1];
-      if (e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
-    }
-    modal.addEventListener('keydown', onKey);
-    const first = foci()[0]; first?.focus();
-  }
-  document.addEventListener('pos:modal-open', e=>{ if (e.detail?.modal) trapFocus(e.detail.modal); });
-
-  // ====== 7) Accessibility CSS ======
-  const accStyle = document.createElement('style');
-  accStyle.textContent = `
-  @media (prefers-reduced-motion: reduce){
-    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
-  }
-  .btn-secondary{ color:#222; background:#e8e8e8; }
-  .btn-secondary:focus{ outline:2px solid #000; outline-offset:2px; }
-  `;
-  document.head.appendChild(accStyle);
-
-  // ====== 8) Passive listeners and DOM cache ======
-  window.addEventListener('scroll', ()=>{}, {passive:true});
-  window.addEventListener('touchmove', ()=>{}, {passive:true});
-  const DOM = new Proxy({}, { get:(t,k)=> t[k] || (t[k]=document.querySelector(String(k))) });
-
-  // ====== 9) Accurate totals with cents ======
-  function sumLineCents(lines){
-    let c=0;
-    for (const it of (lines||[])){
-      const qty = Number(it?.qty||0);
-      const priceC = toCents(it?.price||0);
-      c += qty*priceC;
-    }
-    return c;
-  }
-
-  // ====== 10) Firebase safety helpers (client-side) ======
-  const FirebaseSafe = {
-    userPath(uid){ if(!uid) throw new Error('No uid'); return `tenants/${window.appId||'default'}/users/${uid}`; },
-    salesPath(uid){ return `${this.userPath(uid)}/sales`; }
-  };
-  window.FirebaseSafe = FirebaseSafe;
-
-  // ====== 11) PWA: SW registration + simple offline queue ======
-  if ('serviceWorker' in navigator){
-    navigator.serviceWorker.register('/sw.js').catch(()=>{});
-  }
-  const OfflineQueue = {
-    key:'pos-offline-queue',
-    push(op){ try{ const arr = JSON.parse(localStorage.getItem(this.key)||'[]'); arr.push(op); localStorage.setItem(this.key, JSON.stringify(arr)); }catch{} },
-    flush(handler){ try{ const arr = JSON.parse(localStorage.getItem(this.key)||'[]'); for(const op of arr){ handler?.(op); } localStorage.removeItem(this.key);}catch{} }
-  };
-  window.addEventListener('online', ()=> document.dispatchEvent(new CustomEvent('pos:online')));
-
-  // ====== 12) Print CSS 58mm ======
-  const printCSS = document.createElement('style');
-  printCSS.media='print';
-  printCSS.textContent = `
-  @page{ size:58mm auto; margin:2mm; }
-  .receipt{ width:58mm; font-family: monospace; }
-  .receipt .line{ display:flex; justify-content:space-between; }
-  `;
-  document.head.appendChild(printCSS);
-
-  // ====== 13) Shortcut hint overlay ======
-  const hint = document.createElement('div');
-  hint.id='shortcut-hints';
-  hint.style.cssText='position:fixed;bottom:10px;right:10px;background:rgba(0,0,0,.75);color:#fff;padding:8px 10px;border-radius:8px;font:12px/1.3 system-ui;z-index:9999;display:none';
-  hint.innerHTML = '<div><b>Shortcuts</b></div><div>Ctrl+H: History</div><div>F6: Focus Search</div>';
-  document.body.appendChild(hint);
-  let hintTimer;
-  function showHint(){ clearTimeout(hintTimer); hint.style.display='block'; hintTimer=setTimeout(()=>hint.style.display='none', 1500); }
-  document.addEventListener('keydown', e=>{ if (e.ctrlKey && (e.key||'').toLowerCase()==='h') showHint(); if ((e.key||'')==='F6') showHint(); }, {capture:true});
-
-  // ====== 14) JSDoc typedefs (no runtime effect) ======
-  /**
-   * @typedef {Object} CartItem
-   * @property {string} id
-   * @property {string} name
-   * @property {number} qty
-   * @property {number} price
-   */
-
-  // ====== 15) Safe delete with double confirm and reason ======
-  function confirmDelete({title='ลบข้อมูล', message='ยืนยันการลบ?', onConfirm}={}){
-    const reason = prompt(`${title}\n${message}\nโปรดระบุเหตุผล:`);
-    if (!reason) return false;
-    const ok = confirm('ยืนยันการลบอีกครั้ง');
-    if (ok){ try{ onConfirm?.(reason); }catch{} }
-    return ok;
-  }
-  window.confirmDelete = confirmDelete;
-
-  // Expose small API for app integration
-  window.POS_PATCH = { money, toCents, fromCents, sumLineCents, trapFocus, VirtualList };
-})();
-
 </script>
 <!-- POS PATCH END -->
 
