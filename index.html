@@ -1096,20 +1096,13 @@ const POS_APP = {
                     productData.pricingUnits = productData.pricingUnits.map(unit => {
                         if (unit.barcode === barcode) {
                             unitFound = true;
-                            unit.cost = 
+                            // [PATCH] Update cost only when unit exists
+unit.cost = 
                             parseFloat(row['ต้นทุน']) || unit.cost || 0;
-                            unit.defaultPrice = parseFloat(row['ราคา']) || unit.defaultPrice || 0;
-                            const baseTier = (unit.priceTiers || []).find(t => t.quantity === 1);
-                         
-                           if (baseTier) {
-                                baseTier.price = unit.defaultPrice;
-                            } else {
-                               
-                             if (!unit.priceTiers) unit.priceTiers = [];
-                                unit.priceTiers.push({ quantity: 1, price: unit.defaultPrice });
-                                unit.priceTiers.sort((a, b) => b.quantity - a.quantity);
-                     
-                       }
+                            // [PATCH] Preserve existing defaultPrice on update
+// unit.defaultPrice = parseFloat(row['ราคา']) || unit.defaultPrice || 0;// [PATCH] Preserve existing priceTiers on update
+// 
+                            // [PATCH] Preserve existing priceTiers on update
                         }
                         return unit;
                     });
